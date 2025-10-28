@@ -1,0 +1,631 @@
+/* ===== TICKETS DASHBOARD STYLES ===== */
+/* Modern dashboard-style ticket page with statistics cards */
+
+/*
+ * ACCESSIBILITY COMPLIANCE NOTES:
+ * 
+ * WCAG AA Color Contrast Ratios (minimum 4.5:1 for normal text):
+ * - Primary Text (#1a1a1a) on White: 17.40:1 ✓
+ * - Secondary Text (#666666) on White: 5.74:1 ✓
+ * - White on Blue Primary (#2563eb): 5.17:1 ✓
+ * - White on Blue Hover (#1d4ed8): 6.70:1 ✓
+ * - Dark Gray (#374151) on Light Gray (#f3f4f6): 9.37:1 ✓
+ * - White on Green (#047857): 5.48:1 ✓
+ * - White on Amber (#b45309): 5.02:1 ✓
+ * - White on Gray (#6b7280): 4.83:1 ✓
+ * 
+ * Touch Target Compliance (WCAG 2.5.5 - Level AAA):
+ * - All action buttons: minimum 44x44px (48px on mobile for better usability)
+ * - Spacing between touch targets: minimum 8px
+ * - Touch-action: manipulation to prevent double-tap zoom
+ * 
+ * Keyboard Navigation:
+ * - All interactive elements have tabindex="0"
+ * - Focus-visible styles for keyboard users
+ * - Enter and Space key support via JavaScript
+ * 
+ * Screen Reader Support:
+ * - ARIA labels on all statistics cards
+ * - Semantic HTML structure
+ * - Decorative icons marked with aria-hidden="true"
+ * 
+ * Responsive Typography:
+ * - Fluid scaling from mobile (1.375rem) to desktop (2rem) for headings
+ * - Line heights optimized for readability at all breakpoints
+ * - Stat values scale from 1.5rem (small mobile) to 2rem (desktop)
+ */
+
+:root {
+    /* Color Variables - WCAG AA Compliant */
+    --bg-primary: #f9fafb;
+    --bg-card: #ffffff;
+    --text-primary: #1a1a1a;        /* 17.40:1 contrast on white */
+    --text-secondary: #666666;      /* 5.74:1 contrast on white */
+    
+    /* Status colors - WCAG AA compliant (minimum 4.5:1 ratio with white text) */
+    --status-open: #047857;         /* Green - 5.48:1 contrast */
+    --status-progress: #b45309;     /* Amber - 5.02:1 contrast */
+    --status-closed: #6b7280;       /* Gray - 4.83:1 contrast */
+    
+    /* Action colors - WCAG AA compliant */
+    --action-primary: #2563eb;      /* Blue - 5.17:1 contrast */
+    --action-primary-hover: #1d4ed8; /* Darker blue - 6.70:1 contrast */
+    --action-secondary: #f3f4f6;
+    --action-secondary-hover: #e5e7eb;
+    --border-light: #e5e7eb;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== MAIN CONTAINER ===== */
+.tickets-dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: var(--bg-primary);
+    min-height: 100vh;
+}
+
+/* ===== PAGE HEADER ===== */
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.welcome-message {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+}
+
+.page-description {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* ===== STATISTICS SECTION ===== */
+.stats-section {
+    margin-bottom: 2rem;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* ===== STATISTICS GRID LAYOUT ===== */
+/* Desktop: 4 columns (1024px and above) */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* ===== RESPONSIVE BREAKPOINTS ===== */
+/* Tablet: 2 columns (768px to 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .tickets-dashboard-container {
+        padding: 1.5rem;
+    }
+    
+    .welcome-message {
+        font-size: 1.75rem;
+    }
+}
+
+/* Small tablet / Large mobile (480px to 767px) */
+@media (min-width: 480px) and (max-width: 767px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .tickets-dashboard-container {
+        padding: 1.25rem;
+    }
+    
+    .page-header {
+        margin-bottom: 1.5rem;
+    }
+    
+    .welcome-message {
+        font-size: 1.625rem;
+    }
+    
+    .page-description {
+        font-size: 0.9375rem;
+    }
+}
+
+/* Mobile: 1 column (below 480px) */
+@media (max-width: 479px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .tickets-dashboard-container {
+        padding: 1rem;
+    }
+    
+    .page-header {
+        margin-bottom: 1.5rem;
+    }
+    
+    .welcome-message {
+        font-size: 1.5rem;
+        line-height: 1.3; /* Improve readability on small screens */
+    }
+    
+    .page-description {
+        font-size: 0.875rem;
+        line-height: 1.5; /* Better line height for readability */
+    }
+}
+
+/* ===== STATISTICS CARDS ===== */
+.stat-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+/* ===== STAT ICONS ===== */
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.stat-icon-total {
+    background: transparent;
+    color: var(--status-closed);
+}
+
+.stat-icon-open {
+    background: var(--status-open);
+}
+
+.stat-icon-progress {
+    background: var(--status-progress);
+}
+
+.stat-icon-closed {
+    background: var(--status-closed);
+}
+
+/* ===== STAT CONTENT ===== */
+.stat-content {
+    flex: 1;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* ===== QUICK ACTIONS SECTION ===== */
+.quick-actions {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 1.5rem 0;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Ensure adequate spacing between buttons on mobile */
+@media (max-width: 767px) {
+    .action-buttons {
+        gap: 0.875rem; /* Adequate spacing for touch targets (minimum 8px recommended) */
+    }
+}
+
+/* ===== ACTION BUTTONS ===== */
+.action-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+    min-height: 44px; /* Minimum touch target size for accessibility */
+    min-width: 44px;
+}
+
+.action-btn.primary {
+    background: var(--action-primary);
+    color: white;
+}
+
+.action-btn.primary:hover {
+    background: var(--action-primary-hover);
+}
+
+.action-btn.secondary {
+    background: var(--action-secondary);
+    color: #374151;
+    border: 1px solid var(--border-light);
+}
+
+.action-btn.secondary:hover {
+    background: var(--action-secondary-hover);
+}
+
+/* ===== ACCESSIBILITY ===== */
+/* Focus styles for keyboard navigation */
+.action-btn:focus-visible {
+    outline: 3px solid var(--action-primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+}
+
+.action-btn:focus {
+    outline: none; /* Remove default outline, use focus-visible instead */
+}
+
+.stat-card:focus-within {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Ensure interactive elements are keyboard accessible */
+.action-btn {
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2); /* Subtle tap feedback on mobile */
+    touch-action: manipulation; /* Prevent double-tap zoom on mobile */
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    /* Increase touch targets on touch devices */
+    .action-btn {
+        min-height: 48px;
+        padding: 1rem 1.5rem;
+    }
+    
+    /* Remove hover effects on touch devices */
+    .stat-card:hover {
+        box-shadow: var(--shadow-sm);
+    }
+    
+    /* Add active state for touch feedback */
+    .action-btn:active {
+        transform: scale(0.98);
+    }
+    
+    .stat-card:active {
+        box-shadow: var(--shadow-md);
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .action-btn:focus-visible {
+        outline: 3px solid currentColor;
+        outline-offset: 3px;
+    }
+}
+
+/* ===== MOBILE OPTIMIZATIONS ===== */
+/* Applies to all mobile and tablet screens below 768px */
+@media (max-width: 767px) {
+    .stat-card {
+        padding: 1.25rem;
+        gap: 0.875rem; /* Slightly tighter spacing on mobile */
+    }
+    
+    .stat-value {
+        font-size: 1.75rem;
+        line-height: 1.2; /* Tighter line height for numbers */
+    }
+    
+    .stat-label {
+        font-size: 0.8125rem; /* Slightly smaller for mobile readability */
+    }
+    
+    .quick-actions {
+        padding: 1.5rem;
+    }
+    
+    .section-title {
+        font-size: 1.125rem; /* Reduce from 1.25rem for mobile */
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .action-btn {
+        width: 100%;
+        justify-content: center;
+        min-height: 48px; /* Slightly larger than minimum for better usability */
+        padding: 0.875rem 1.5rem; /* Increase vertical padding for better touch targets */
+    }
+}
+
+/* ===== SMALL MOBILE OPTIMIZATIONS (below 375px) ===== */
+@media (max-width: 374px) {
+    .welcome-message {
+        font-size: 1.375rem; /* Further reduce for very small screens */
+        line-height: 1.3;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem; /* Adjust for small screens */
+    }
+    
+    .stat-icon {
+        width: 40px; /* Slightly smaller icon on very small screens */
+        height: 40px;
+    }
+    
+    .stat-card {
+        padding: 1rem; /* Reduce padding on very small screens */
+    }
+    
+    .quick-actions {
+        padding: 1.25rem;
+    }
+}
+
+/* ===== LOADING STATES ===== */
+/* Skeleton screen for statistics cards during load */
+.stat-card.loading {
+    pointer-events: none;
+}
+
+.stat-card.loading .stat-value,
+.stat-card.loading .stat-label {
+    background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+    color: transparent;
+    border-radius: 4px;
+    user-select: none;
+}
+
+.stat-card.loading .stat-value {
+    width: 60px;
+    height: 32px;
+    display: inline-block;
+}
+
+.stat-card.loading .stat-label {
+    width: 100px;
+    height: 14px;
+    display: inline-block;
+}
+
+.stat-card.loading .stat-icon {
+    opacity: 0.3;
+}
+
+/* Skeleton loading animation */
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Fade-in animation when data loads */
+.stat-card.loaded {
+    animation: fade-in 0.3s ease-in;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Stagger animation for multiple cards */
+.stat-card.loaded:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.stat-card.loaded:nth-child(2) {
+    animation-delay: 0.05s;
+}
+
+.stat-card.loaded:nth-child(3) {
+    animation-delay: 0.1s;
+}
+
+.stat-card.loaded:nth-child(4) {
+    animation-delay: 0.15s;
+}
+
+/* Loading state for action buttons */
+.quick-actions.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.quick-actions.loaded {
+    animation: fade-in 0.3s ease-in 0.2s both;
+}
+
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+/* CSS Containment - Isolates elements for better rendering performance */
+.stat-card {
+    contain: layout style paint;
+}
+
+.stats-grid {
+    contain: layout;
+}
+
+.quick-actions {
+    contain: layout style;
+}
+
+/* Will-change hints for animated elements */
+.action-btn {
+    will-change: background-color, transform;
+}
+
+.stat-card.loading .stat-value,
+.stat-card.loading .stat-label {
+    will-change: background-position;
+}
+
+/* Minimize layout shifts during page load */
+/* Reserve space for stat values to prevent content jumping */
+.stat-value {
+    min-height: 2rem; /* Match font-size to prevent layout shift */
+    display: block;
+}
+
+.stat-label {
+    min-height: 1.25rem; /* Reserve space for label */
+    display: block;
+}
+
+/* Reserve space for icons to prevent layout shift */
+.stat-icon {
+    min-width: 48px;
+    min-height: 48px;
+}
+
+/* Prevent layout shift in action buttons */
+.action-btn svg {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+}
+
+/* GPU acceleration for smooth animations */
+.stat-card.loaded,
+.quick-actions.loaded {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* Optimize repaints during hover */
+.stat-card:hover,
+.action-btn:hover {
+    transform: translateZ(0);
+}
+
+/* Content visibility for off-screen optimization */
+@supports (content-visibility: auto) {
+    .stats-section {
+        content-visibility: auto;
+        contain-intrinsic-size: auto 200px;
+    }
+}
+
+/* Optimize font rendering */
+.welcome-message,
+.stat-value,
+.section-title {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optimize image rendering for icons */
+.stat-icon svg {
+    shape-rendering: geometricPrecision;
+}
+
+/* Prevent unnecessary repaints on scroll */
+.tickets-dashboard-container {
+    isolation: isolate;
+}
+
+/* Optimize for mobile devices */
+@media (max-width: 767px) {
+    /* Reduce complexity on mobile for better performance */
+    .stat-card {
+        will-change: auto; /* Remove will-change on mobile to save memory */
+    }
+    
+    /* Simplify shadows on mobile for better performance */
+    .stat-card {
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-card:hover {
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Same as default on mobile */
+    }
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    /* Disable skeleton loading animation for reduced motion */
+    .stat-card.loading .stat-value,
+    .stat-card.loading .stat-label {
+        animation: none;
+        background: #e5e7eb;
+    }
+    
+    /* Instant transitions instead of animations */
+    .stat-card.loaded,
+    .quick-actions.loaded {
+        animation: none;
+    }
+}

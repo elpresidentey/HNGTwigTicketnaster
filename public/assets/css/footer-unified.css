@@ -1,0 +1,260 @@
+/* ===== UNIFIED FOOTER STYLES (SAME ACROSS ALL PAGES) ===== */
+/* Copied from landing-redesign.css to ensure consistency */
+
+/* Footer CSS Variables (if not already defined) */
+:root {
+  --primary-blue: #2563eb;
+  --primary-blue-dark: #1d4ed8;
+  --neutral-900: #0f172a;
+  --white: #ffffff;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  --radius-md: 0.375rem;
+}
+
+/* ===== MODERN FOOTER STYLES ===== */
+.site-footer {
+  background: var(--neutral-900) !important;
+  color: var(--white) !important;
+  padding: var(--space-20) 0 var(--space-8) !important;
+  margin-top: var(--space-24) !important;
+}
+
+.footer-content {
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 var(--space-6) !important;
+  display: grid !important;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr !important;
+  gap: var(--space-12) !important;
+  margin-bottom: var(--space-12) !important;
+}
+
+/* Company Section */
+.footer-company {
+  grid-column: 1 !important;
+}
+
+.footer-logo {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--space-3) !important;
+  margin-bottom: var(--space-6) !important;
+}
+
+.footer-logo-icon {
+  font-size: var(--font-size-2xl) !important;
+}
+
+.footer-logo span {
+  font-size: var(--font-size-xl) !important;
+  font-weight: 700 !important;
+  color: var(--white) !important;
+}
+
+.footer-tagline {
+  color: rgba(255, 255, 255, 0.7) !important;
+  line-height: 1.6 !important;
+  font-size: var(--font-size-base) !important;
+  max-width: 300px !important;
+}
+
+/* Navigation Sections */
+.footer-nav-section {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.footer-nav-title {
+  font-size: var(--font-size-lg) !important;
+  font-weight: 600 !important;
+  color: var(--white) !important;
+  margin-bottom: var(--space-4) !important;
+}
+
+.footer-nav {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: var(--space-3) !important;
+}
+
+.footer-link {
+  color: rgba(255, 255, 255, 0.7) !important;
+  text-decoration: none !important;
+  font-size: var(--font-size-sm) !important;
+  transition: color 0.2s ease !important;
+}
+
+.footer-link:hover {
+  color: var(--white) !important;
+}
+
+/* Newsletter Section */
+.footer-newsletter {
+  grid-column: 5 !important;
+}
+
+.footer-newsletter-title {
+  font-size: var(--font-size-lg) !important;
+  font-weight: 600 !important;
+  color: var(--white) !important;
+  margin-bottom: var(--space-4) !important;
+}
+
+.footer-newsletter-description {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: var(--font-size-sm) !important;
+  line-height: 1.5 !important;
+  margin-bottom: var(--space-6) !important;
+}
+
+.footer-newsletter-form {
+  display: flex !important;
+  gap: var(--space-2) !important;
+}
+
+.footer-newsletter-input {
+  flex: 1 !important;
+  padding: 0.75rem 1rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: var(--radius-md) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--white) !important;
+  font-size: var(--font-size-sm) !important;
+  transition: all 0.2s ease !important;
+}
+
+.footer-newsletter-input::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.footer-newsletter-input:focus {
+  outline: none !important;
+  border-color: var(--primary-blue) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+.footer-newsletter-button {
+  padding: 0.75rem 1.5rem !important;
+  background: var(--primary-blue) !important;
+  color: var(--white) !important;
+  border: none !important;
+  border-radius: var(--radius-md) !important;
+  font-weight: 600 !important;
+  font-size: var(--font-size-sm) !important;
+  cursor: pointer !important;
+  transition: background 0.2s ease !important;
+}
+
+.footer-newsletter-button:hover {
+  background: var(--primary-blue-dark) !important;
+}
+
+/* Footer Bottom */
+.footer-bottom {
+  grid-column: 1 / -1 !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding-top: var(--space-8) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  margin-top: var(--space-8) !important;
+}
+
+.footer-copyright {
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-size: var(--font-size-sm) !important;
+}
+
+.footer-legal-links {
+  display: flex !important;
+  gap: var(--space-6) !important;
+}
+
+.footer-legal-link {
+  color: rgba(255, 255, 255, 0.6) !important;
+  text-decoration: none !important;
+  font-size: var(--font-size-sm) !important;
+  transition: color 0.2s ease !important;
+}
+
+.footer-legal-link:hover {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Responsive Footer */
+@media (max-width: 1024px) {
+  .footer-content {
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: var(--space-8) !important;
+  }
+  
+  .footer-company {
+    grid-column: 1 / -1 !important;
+    margin-bottom: var(--space-6) !important;
+  }
+  
+  .footer-newsletter {
+    grid-column: 1 / -1 !important;
+    margin-top: var(--space-6) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-content {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-6) !important;
+  }
+  
+  .footer-company,
+  .footer-nav-section,
+  .footer-newsletter {
+    grid-column: 1 !important;
+  }
+  
+  .footer-bottom {
+    flex-direction: column !important;
+    gap: var(--space-4) !important;
+    text-align: center !important;
+  }
+  
+  .footer-legal-links {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: var(--space-4) !important;
+  }
+  
+  .footer-newsletter-form {
+    flex-direction: column !important;
+  }
+  
+  .footer-newsletter-button {
+    align-self: flex-start !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .site-footer {
+    padding: var(--space-16) 0 var(--space-6) !important;
+  }
+  
+  .footer-content {
+    padding: 0 var(--space-4) !important;
+  }
+  
+  .footer-tagline {
+    max-width: none !important;
+  }
+}

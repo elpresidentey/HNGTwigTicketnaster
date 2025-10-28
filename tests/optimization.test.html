@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimization Integration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 2rem 0;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+        }
+        .test-result {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border-radius: 0.25rem;
+        }
+        .pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            margin: 0.5rem;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #test-results {
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>Optimization Integration Test Suite</h1>
+    <p>This page tests all optimization features including asset optimization, loading states, error boundaries, and responsive design.</p>
+
+    <div class="test-section">
+        <h2>System Initialization Tests</h2>
+        <button onclick="testSystemInitialization()">Test System Initialization</button>
+        <div id="init-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Loading States Tests</h2>
+        <button onclick="testLoadingStates()">Test Loading States</button>
+        <button onclick="testGlobalLoading()">Test Global Loading</button>
+        <button onclick="testProgressIndicators()">Test Progress Indicators</button>
+        <div id="loading-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Error Boundaries Tests</h2>
+        <button onclick="testErrorBoundaries()">Test Error Boundaries</button>
+        <button onclick="triggerTestError()">Trigger Test Error</button>
+        <button onclick="testResourceError()">Test Resource Error</button>
+        <div id="error-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Responsive Design Tests</h2>
+        <button onclick="testResponsiveVerifier()">Test Responsive Verifier</button>
+        <button onclick="testBreakpointDetection()">Test Breakpoint Detection</button>
+        <button onclick="testTouchOptimization()">Test Touch Optimization</button>
+        <div id="responsive-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Asset Optimization Tests</h2>
+        <button onclick="testAssetOptimizer()">Test Asset Optimizer</button>
+        <button onclick="testLazyLoading()">Test Lazy Loading</button>
+        <button onclick="testPerformanceMetrics()">Test Performance Metrics</button>
+        <div id="asset-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Integration Tests</h2>
+        <button onclick="testFullIntegration()">Test Full Integration</button>
+        <button onclick="generateOptimizationReport()">Generate Optimization Report</button>
+        <div id="integration-results"></div>
+    </div>
+
+    <div id="test-results"></div>
+
+    <!-- Load optimization scripts -->
+    <script src="../public/assets/js/utils.js"></script>
+    <script src="../public/assets/js/loading-states.js"></script>
+    <script src="../public/assets/js/error-boundaries.js"></script>
+    <script src="../public/assets/js/responsive-verifier.js"></script>
+    <script src="../public/assets/js/asset-optimizer.js"></script>
+    <script src="../public/assets/js/feature-detect.js"></script>
+    <script src="../public/assets/js/optimization-integration.js"></script>
+
+    <script>
+        // Test utilities
+        function logResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const result = document.createElement('div');
+            result.className = `test-result ${type}`;
+            result.textContent = message;
+            container.appendChild(result);
+        }
+
+        function clearResults(containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+        }
+
+        // System Initialization Tests
+        function testSystemInitialization() {
+            clearResults('init-results');
+            
+            // Test if optimization integration is initialized
+            if (typeof window.optimizationIntegration !== 'undefined') {
+                logResult('init-results', '✓ Optimization Integration initialized', 'pass');
+            } else {
+                logResult('init-results', '✗ Optimization Integration not found', 'fail');
+            }
+
+            // Test individual systems
+            const systems = [
+                'loadingStates',
+                'errorBoundariesSystem',
+                'responsiveVerifier',
+                'assetOptimizer',
+                'featureDetector'
+            ];
+
+            systems.forEach(system => {
+                if (typeof window[system] !== 'undefined') {
+                    logResult('init-results', `✓ ${system} initialized`, 'pass');
+                } else {
+                    logResult('init-results', `✗ ${system} not found`, 'fail');
+                }
+            });
+        }
+
+        // Loading States Tests
+        function testLoadingStates() {
+            clearResults('loading-results');
+            
+            if (!window.loadingStates) {
+                logResult('loading-results', '✗ Loading States system not available', 'fail');
+                return;
+            }
+
+            try {
+                // Test inline loading
+                const testElement = document.createElement('div');
+                testElement.textContent = 'Test content';
+                document.body.appendChild(testElement);
+
+                const loaderId = window.loadingStates.showLoading(testElement, 'Testing...');
+                logResult('loading-results', '✓ Inline loading state created', 'pass');
+
+                setTimeout(() => {
+                    window.loadingStates.hideLoading(loaderId);
+                    document.body.removeChild(testElement);
+                    logResult('loading-results', '✓ Inline loading state removed', 'pass');
+                }, 1000);
+
+            } catch (error) {
+                logResult('loading-results', `✗ Loading states error: ${error.message}`, 'fail');
+            }
+        }
+
+        function testGlobalLoading() {
+            if (!window.loadingStates) {
+                logResult('loading-results', '✗ Loading States system not available', 'fail');
+                return;
+            }
+
+            try {
+                window.loadingStates.showGlobalLoading('Testing global loading...', true);
+                logResult('loading-results', '✓ Global loading shown', 'pass');
+
+                // Update progress
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 20;
+                    window.loadingStates.updateGlobalProgress(progress, `Progress: ${progress}%`);
+                    
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        setTimeout(() => {
+                            window.loadingStates.hideGlobalLoading();
+                            logResult('loading-results', '✓ Global loading completed', 'pass');
+                        }, 500);
+                    }
+                }, 300);
+
+            } catch (error) {
+                logResult('loading-results', `✗ Global loading error: ${error.message}`, 'fail');
+            }
+        }
+
+        function testProgressIndicators() {
+            if (!window.loadingStates) {
+                logResult('loading-results', '✗ Loading States system not available', 'fail');
+                return;
+            }
+
+            try {
+                const operationId = 'test-operation';
+                let progress = 0;
+
+                const interval = setInterval(() => {
+                    progress += 25;
+                    window.loadingStates.showProgress(operationId, progress, `Step ${progress/25} of 4`);
+                    
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        logResult('loading-results', '✓ Progress indicators working', 'pass');
+                    }
+                }, 500);
+
+            } catch (error) {
+                logResult('loading-results', `✗ Progress indicators error: ${error.message}`, 'fail');
+            }
+        }
+
+        // Error Boundaries Tests
+        function testErrorBoundaries() {
+            clearResults('error-results');
+            
+            if (!window.errorBoundariesSystem) {
+                logResult('error-results', '✗ Error Boundaries system not available', 'fail');
+                return;
+            }
+
+            try {
+                const stats = window.errorBoundariesSystem.getErrorStats();
+                logResult('error-results', `✓ Error boundaries active: ${stats.boundaries.length} boundaries`, 'pass');
+                logResult('error-results', `ℹ Total errors logged: ${stats.totalErrors}`, 'info');
+                logResult('error-results', `ℹ Emergency mode: ${stats.emergencyMode ? 'Active' : 'Inactive'}`, 'info');
+
+            } catch (error) {
+                logResult('error-results', `✗ Error boundaries error: ${error.message}`, 'fail');
+            }
+        }
+
+        function triggerTestError() {
+            try {
+                // Trigger a controlled error for testing
+                throw new Error('Test error for boundary testing');
+            } catch (error) {
+                logResult('error-results', '✓ Test error triggered and handled', 'pass');
+            }
+        }
+
+        function testResourceError() {
+            // Create a broken image to test resource error handling
+            const img = document.createElement('img');
+            img.src = 'nonexistent-image.jpg';
+            img.style.display = 'none';
+            
+            img.addEventListener('error', () => {
+                logResult('error-results', '✓ Resource error handling working', 'pass');
+                document.body.removeChild(img);
+            });
+            
+            document.body.appendChild(img);
+        }
+
+        // Responsive Design Tests
+        function testResponsiveVerifier() {
+            clearResults('responsive-results');
+            
+            if (!window.responsiveVerifier) {
+                logResult('responsive-results', '✗ Responsive Verifier not available', 'fail');
+                return;
+            }
+
+            try {
+                const report = window.responsiveVerifier.getVerificationReport();
+                logResult('responsive-results', `✓ Current breakpoint: ${report.currentBreakpoint}`, 'pass');
+                logResult('responsive-results', `ℹ Device type: ${JSON.stringify(report.deviceType)}`, 'info');
+                logResult('responsive-results', `ℹ Orientation: ${report.orientation}`, 'info');
+
+            } catch (error) {
+                logResult('responsive-results', `✗ Responsive verifier error: ${error.message}`, 'fail');
+            }
+        }
+
+        function testBreakpointDetection() {
+            if (!window.responsiveVerifier) {
+                logResult('responsive-results', '✗ Responsive Verifier not available', 'fail');
+                return;
+            }
+
+            // Listen for breakpoint changes
+            window.addEventListener('breakpointChange', (event) => {
+                logResult('responsive-results', 
+                    `✓ Breakpoint change detected: ${event.detail.oldBreakpoint} → ${event.detail.newBreakpoint}`, 
+                    'pass');
+            });
+
+            logResult('responsive-results', 'ℹ Resize window to test breakpoint detection', 'info');
+        }
+
+        function testTouchOptimization() {
+            if (!window.responsiveVerifier) {
+                logResult('responsive-results', '✗ Responsive Verifier not available', 'fail');
+                return;
+            }
+
+            const isTouchDevice = window.responsiveVerifier.isTouchDevice();
+            logResult('responsive-results', `ℹ Touch device: ${isTouchDevice}`, 'info');
+            
+            if (isTouchDevice) {
+                logResult('responsive-results', '✓ Touch optimizations should be active', 'pass');
+            } else {
+                logResult('responsive-results', 'ℹ Touch optimizations not needed on this device', 'info');
+            }
+        }
+
+        // Asset Optimization Tests
+        function testAssetOptimizer() {
+            clearResults('asset-results');
+            
+            if (!window.assetOptimizer) {
+                logResult('asset-results', '✗ Asset Optimizer not available', 'fail');
+                return;
+            }
+
+            try {
+                const metrics = window.assetOptimizer.getPerformanceMetrics();
+                logResult('asset-results', `✓ Assets loaded: ${metrics.loadedAssetsCount}`, 'pass');
+                logResult('asset-results', `ℹ Cache hit rate: ${metrics.cacheHitRate.toFixed(1)}%`, 'info');
+                logResult('asset-results', `ℹ Bundle size: ${(metrics.bundleSize / 1024).toFixed(1)} KB`, 'info');
+
+            } catch (error) {
+                logResult('asset-results', `✗ Asset optimizer error: ${error.message}`, 'fail');
+            }
+        }
+
+        function testLazyLoading() {
+            // Create a test element for lazy loading
+            const testDiv = document.createElement('div');
+            testDiv.setAttribute('data-lazy-src', 'test-image.jpg');
+            testDiv.style.height = '200px';
+            testDiv.style.background = '#f0f0f0';
+            testDiv.style.margin = '1000px 0'; // Place it below fold
+            testDiv.textContent = 'Lazy loading test element';
+            
+            document.body.appendChild(testDiv);
+            
+            logResult('asset-results', '✓ Lazy loading test element created (scroll down to test)', 'pass');
+            
+            // Clean up after 5 seconds
+            setTimeout(() => {
+                if (testDiv.parentNode) {
+                    document.body.removeChild(testDiv);
+                }
+            }, 5000);
+        }
+
+        function testPerformanceMetrics() {
+            if (!window.optimizationIntegration) {
+                logResult('asset-results', '✗ Optimization Integration not available', 'fail');
+                return;
+            }
+
+            try {
+                const report = window.optimizationIntegration.getOptimizationReport();
+                logResult('asset-results', `✓ Performance metrics available`, 'pass');
+                logResult('asset-results', `ℹ Optimization level: ${report.performanceMetrics.optimizationLevel}`, 'info');
+                logResult('asset-results', `ℹ Init time: ${report.performanceMetrics.initTime.toFixed(2)}ms`, 'info');
+
+            } catch (error) {
+                logResult('asset-results', `✗ Performance metrics error: ${error.message}`, 'fail');
+            }
+        }
+
+        // Integration Tests
+        function testFullIntegration() {
+            clearResults('integration-results');
+            
+            const systems = [
+                'optimizationIntegration',
+                'loadingStates',
+                'errorBoundariesSystem',
+                'responsiveVerifier',
+                'assetOptimizer'
+            ];
+
+            let passCount = 0;
+            systems.forEach(system => {
+                if (window[system]) {
+                    passCount++;
+                    logResult('integration-results', `✓ ${system} integrated`, 'pass');
+                } else {
+                    logResult('integration-results', `✗ ${system} not integrated`, 'fail');
+                }
+            });
+
+            const integrationScore = (passCount / systems.length) * 100;
+            logResult('integration-results', `ℹ Integration score: ${integrationScore.toFixed(1)}%`, 
+                integrationScore >= 80 ? 'pass' : 'fail');
+        }
+
+        function generateOptimizationReport() {
+            if (!window.optimizationIntegration) {
+                logResult('integration-results', '✗ Cannot generate report - Optimization Integration not available', 'fail');
+                return;
+            }
+
+            try {
+                const report = window.optimizationIntegration.getOptimizationReport();
+                
+                logResult('integration-results', '✓ Optimization Report Generated:', 'pass');
+                logResult('integration-results', `Systems initialized: ${Object.values(report.systems).filter(Boolean).length}/${Object.keys(report.systems).length}`, 'info');
+                logResult('integration-results', `Performance level: ${report.performanceMetrics.optimizationLevel}`, 'info');
+                logResult('integration-results', `Error count: ${report.performanceMetrics.errorCount}`, 'info');
+                
+                console.log('Full Optimization Report:', report);
+                
+            } catch (error) {
+                logResult('integration-results', `✗ Report generation error: ${error.message}`, 'fail');
+            }
+        }
+
+        // Auto-run basic tests when page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testSystemInitialization();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

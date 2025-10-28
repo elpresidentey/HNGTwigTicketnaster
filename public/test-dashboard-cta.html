@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard CTA Test</title>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <link rel="stylesheet" href="/assets/css/dashboard-modern.css">
+    <style>
+        body {
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .test-info {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .test-info h1 {
+            margin: 0 0 1rem 0;
+            color: #333;
+        }
+        .test-info p {
+            margin: 0.5rem 0;
+            color: #666;
+        }
+        .status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        .status.working { background: #d1fae5; color: #065f46; }
+        .status.testing { background: #fef3c7; color: #92400e; }
+    </style>
+</head>
+<body>
+    <div class="test-info">
+        <h1>🧪 Dashboard CTA Button Test</h1>
+        <p><strong>Test Status:</strong> <span class="status testing">TESTING</span></p>
+        <p>This page tests the dashboard CTA button functionality.</p>
+        <p><strong>Instructions:</strong></p>
+        <ol>
+            <li>Click the "Create New Ticket" button - should redirect to /tickets</li>
+            <li>Click the "View Reports" button - should show toast message</li>
+            <li>Click the "Help & Support" button - should show toast message</li>
+        </ol>
+        <p><strong>Expected Behavior:</strong></p>
+        <ul>
+            <li>✅ Create New Ticket: Redirects to /tickets with modal opening</li>
+            <li>✅ View Reports: Shows "Analytics & Reports feature coming soon!" toast</li>
+            <li>✅ Help & Support: Shows "Help & Support feature coming soon!" toast</li>
+        </ul>
+    </div>
+
+    <div class="dashboard-container">
+        <section class="quick-actions" aria-labelledby="actions-title">
+            <div class="actions-header">
+                <h2 class="actions-title" id="actions-title">Quick Actions</h2>
+                <p class="actions-subtitle">Test the CTA buttons below</p>
+            </div>
+            <div class="actions-grid" role="list">
+                <button class="action-card action-secondary" 
+                        id="createTicketBtn" 
+                        role="listitem" 
+                        aria-label="Create a new ticket">
+                    <div class="action-icon" aria-hidden="true">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="16"></line>
+                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3 class="action-title">Create New Ticket</h3>
+                        <p class="action-description">Quickly add a new ticket to track</p>
+                    </div>
+                    <div class="action-arrow" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9,18 15,12 9,6"></polyline>
+                        </svg>
+                    </div>
+                </button>
+                
+                <a href="/analytics" class="action-card action-primary" 
+                   role="listitem" 
+                   aria-label="View analytics and reports">
+                    <div class="action-icon" aria-hidden="true">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 3v18h18"></path>
+                            <path d="M18 17V9"></path>
+                            <path d="M13 17V5"></path>
+                            <path d="M8 17v-3"></path>
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3 class="action-title">View Reports</h3>
+                        <p class="action-description">Analyze ticket trends and team performance</p>
+                    </div>
+                    <div class="action-arrow" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9,18 15,12 9,6"></polyline>
+                        </svg>
+                    </div>
+                </a>
+                
+                <a href="/support" class="action-card action-secondary" 
+                   role="listitem" 
+                   aria-label="Get help and support">
+                    <div class="action-icon" aria-hidden="true">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </div>
+                    <div class="action-content">
+                        <h3 class="action-title">Help & Support</h3>
+                        <p class="action-description">Get assistance and access documentation</p>
+                    </div>
+                    <div class="action-arrow" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9,18 15,12 9,6"></polyline>
+                        </svg>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Load dependencies -->
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/tickets.js"></script>
+    <script src="/assets/js/app-integration.js"></script>
+
+    <script>
+        // Manual test - simulate the dashboard page
+        console.log('Dashboard CTA Test Page Loaded');
+        console.log('Current page detection:', window.location.pathname);
+        
+        // Override page detection for testing
+        if (window.appIntegration) {
+            window.appIntegration.currentPage = 'dashboard';
+            console.log('Set current page to: dashboard');
+        }
+        
+        // Add click listeners to log events
+        document.getElementById('createTicketBtn')?.addEventListener('click', () => {
+            console.log('✅ Create Ticket button clicked');
+        });
+        
+        document.querySelector('a[href="/analytics"]')?.addEventListener('click', (e) => {
+            console.log('✅ Analytics button clicked');
+        });
+        
+        document.querySelector('a[href="/support"]')?.addEventListener('click', (e) => {
+            console.log('✅ Support button clicked');
+        });
+    </script>
+</body>
+</html>

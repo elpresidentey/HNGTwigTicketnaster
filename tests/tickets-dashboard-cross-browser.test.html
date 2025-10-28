@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Dashboard Cross-Browser Compatibility Tests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 2rem 0;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+        }
+        .test-result {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border-radius: 0.25rem;
+        }
+        .pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            margin: 0.5rem;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .browser-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .summary {
+            background: #e7f3ff;
+            border: 2px solid #007bff;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        .summary h2 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ticket Dashboard Cross-Browser Compatibility Tests</h1>
+    <p>This test suite validates the ticket dashboard redesign across Chrome, Firefox, Safari, and Edge.</p>
+
+    <div class="browser-info">
+        <h2>Current Browser Information</h2>
+        <div id="browser-details"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>1. CSS Feature Support Tests</h2>
+        <button onclick="runCssFeatureTests()" id="css-test-btn">Run CSS Feature Tests</button>
+        <div id="css-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Statistics Card Rendering Tests</h2>
+        <button onclick="runStatisticsCardTests()" id="stats-test-btn">Run Statistics Card Tests</button>
+        <div id="stats-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Responsive Layout Tests</h2>
+        <button onclick="runResponsiveLayoutTests()" id="responsive-test-btn">Run Responsive Layout Tests</button>
+        <div id="responsive-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. LocalStorage Functionality Tests</h2>
+        <button onclick="runLocalStorageTests()" id="storage-test-btn">Run LocalStorage Tests</button>
+        <div id="storage-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Visual Consistency Tests</h2>
+        <button onclick="runVisualConsistencyTests()" id="visual-test-btn">Run Visual Consistency Tests</button>
+        <div id="visual-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>6. Run All Tests</h2>
+        <button onclick="runAllTests()" id="all-tests-btn">Run All Tests</button>
+    </div>
+
+    <div id="summary" class="summary" style="display: none;">
+        <h2>Test Summary</h2>
+        <div id="summary-content"></div>
+    </div>
+
+    <!-- Load required modules -->
+    <script src="../public/assets/js/ticket-statistics.js"></script>
+    <script src="../public/assets/js/ticket-page-controller.js"></script>
+    <script src="../public/assets/js/auth.js"></script>
+
+    <script>
+        // Test framework
+        class TicketDashboardTestRunner {
+            constructor() {
+                this.results = [];
+                this.currentSuite = '';
+                this.totalTests = 0;
+                this.passedTests = 0;
+                this.failedTests = 0;
+                this.warningTests = 0;
+                this.browserInfo = this.detectBrowser();
+            }
+
+            detectBrowser() {
+                const userAgent = navigator.userAgent;
+                const vendor = navigator.vendor;
+                
+                let browser = 'Unknown';
+                let version = 'Unknown';
+                let engine = 'Unknown';
+                
+                if (userAgent.includes('Chrome') && vendor.includes('Google')) {
+                    browser = 'Chrome';
+                    engine = 'Blink';
+                    const match = userAgent.match(/Chrome\/(\d+)/);
+                    version = match ? match[1] : 'Unknown';
+                } else if (userAgent.includes('Firefox')) {
+                    browser = 'Firefox';
+                    engine = 'Gecko';
+                    const match = userAgent.match(/Firefox\/(\d+)/);
+                    version = match ? match[1] : 'Unknown';
+                } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+                    browser = 'Safari';
+                    engine = 'WebKit';
+                    const match = userAgent.match(/Version\/(\d+)/);
+                    version = match ? match[1] : 'Unknown';
+                } else if (userAgent.includes('Edg')) {
+                    browser = 'Edge';
+                    engine = 'Blink';
+                    const match = userAgent.match(/Edg\/(\d+)/);
+                    version = match ? match[1] : 'Unknown';
+                }
+                
+                return {
+                    browser,
+                    version,
+                    engine,
+                    userAgent,
+                    platform: navigator.platform,
+                    language: navigator.language,
+                    hardwareConcurrency: navigator.hardwareConcurrency || 'Unknown',
+                    maxTouchPoints: navigator.maxTouchPoints || 0
+                };
+            }
+
+            describe(suiteName, testFn) {
+                this.currentSuite = suiteName;
+                console.log(`\n=== ${suiteName} ===`);
+                return testFn();
+            }
+
+            async it(testName, testFn) {
+                this.totalTests++;
+                try {
+                    await testFn();
+                    this.results.push({ suite: this.currentSuite, name: testName, status: 'pass' });
+                    this.passedTests++;
+                    this.logResult(this.currentSuite.toLowerCase().replace(/\s+/g, '-'), `✓ ${testName}`, 'pass');
+                } catch (error) {
+                    if (error.message.includes('WARNING')) {
+                        this.results.push({ 
+                            suite: this.currentSuite, 
+                            name: testName, 
+                            status: 'warning', 
+                            error: error.message 
+                        });
+                        this.warningTests++;
+                        this.logResult(this.currentSuite.toLowerCase().replace(/\s+/g, '-'), `⚠ ${testName}: ${error.message}`, 'warning');
+                    } else {
+                        this.results.push({ 
+                            suite: this.currentSuite, 
+                            name: testName, 
+                            status: 'fail', 
+                            error: error.message 
+                        });
+                        this.failedTests++;
+                        this.logResult(this.currentSuite.toLowerCase().replace(/\s+/g, '-'), `✗ ${testName}: ${error.message}`, 'fail');
+                    }
+                }
+            }
+
+            expect(actual) {
+                return {
+                    toBe: (expected) => {
+                        if (actual !== expected) {
+                            throw new Error(`Expected ${expected}, but got ${actual}`);
+                        }
+                    },
+                    toBeTruthy: () => {
+                        if (!actual) {
+                            throw new Error(`Expected truthy value, but got ${actual}`);
+                        }
+                    },
+                    toBeFalsy: () => {
+                        if (actual) {
+                            throw new Error(`Expected falsy value, but got ${actual}`);
+                        }
+                    },
+                    toContain: (expected) => {
+                        if (typeof actual === 'string' && !actual.includes(expected)) {
+                            throw new Error(`Expected "${actual}" to contain "${expected}"`);
+                        }
+                    },
+                    toBeGreaterThan: (expected) => {
+                        if (actual <= expected) {
+                            throw new Error(`Expected ${actual} to be greater than ${expected}`);
+                        }
+                    },
+                    toBeLessThan: (expected) => {
+                        if (actual >= expected) {
+                            throw new Error(`Expected ${actual} to be less than ${expected}`);
+                        }
+                    }
+                };
+            }
+
+            logResult(containerId, message, type = 'info') {
+                const container = document.getElementById(`${containerId}-results`);
+                if (!container) return;
+                
+                const result = document.createElement('div');
+                result.className = `test-result ${type}`;
+                result.textContent = message;
+                container.appendChild(result);
+            }
+
+            clearResults(containerId) {
+                const container = document.getElementById(`${containerId}-results`);
+                if (container) {
+                    container.innerHTML = '';
+                }
+            }
+
+            async delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            supportsCSS(property, value) {
+                const element = document.createElement('div');
+                element.style[property] = value;
+                return element.style[property] !== '';
+            }
+
+            supportsCSSSyntax(declaration) {
+                return CSS && CSS.supports && CSS.supports(declaration);
+            }
+
+            showSummary() {
+                const summaryDiv = document.getElementById('summary');
+                const summaryContent = document.getElementById('summary-content');
+                
+                const passRate = ((this.passedTests / this.totalTests) * 100).toFixed(1);
+                
+                summaryContent.innerHTML = `
+                    <p><strong>Total Tests:</strong> ${this.totalTests}</p>
+                    <p><strong>Passed:</strong> ${this.passedTests}</p>
+                    <p><strong>Failed:</strong> ${this.failedTests}</p>
+                    <p><strong>Warnings:</strong> ${this.warningTests}</p>
+                    <p><strong>Pass Rate:</strong> ${passRate}%</p>
+                    <p><strong>Browser:</strong> ${this.browserInfo.browser} ${this.browserInfo.version} (${this.browserInfo.engine})</p>
+                `;
+                
+                summaryDiv.style.display = 'block';
+            }
+        }
+
+        const testRunner = new TicketDashboardTestRunner();
+
+        // Display browser information
+        function displayBrowserInfo() {
+            const browserDetails = document.getElementById('browser-details');
+            const info = testRunner.browserInfo;
+            
+            browserDetails.innerHTML = `
+                <p><strong>Browser:</strong> ${info.browser} ${info.version}</p>
+                <p><strong>Engine:</strong> ${info.engine}</p>
+                <p><strong>Platform:</strong> ${info.platform}</p>
+                <p><strong>Language:</strong> ${info.language}</p>
+                <p><strong>Hardware Concurrency:</strong> ${info.hardwareConcurrency}</p>
+                <p><strong>Max Touch Points:</strong> ${info.maxTouchPoints}</p>
+                <p><strong>User Agent:</strong> ${info.userAgent}</p>
+            `;
+        }
+
+        // Setup test environment
+        function setupTestEnvironment() {
+            localStorage.clear();
+            
+            // Create test session
+            const testSession = {
+                token: 'test-token-' + Date.now(),
+                user: {
+                    id: 'test-user-1',
+                    username: 'testuser',
+                    email: 'test@example.com'
+                },
+                expiresAt: Date.now() + 3600000
+            };
+            localStorage.setItem('ticketapp_session', JSON.stringify(testSession));
+            
+            // Create test tickets
+            const testTickets = [
+                {
+                    id: 'ticket-1',
+                    title: 'Test Ticket 1',
+                    description: 'First test ticket',
+                    status: 'Open',
+                    createdAt: Date.now() - 86400000,
+                    userId: 'test-user-1'
+                },
+                {
+                    id: 'ticket-2',
+                    title: 'Test Ticket 2',
+                    description: 'Second test ticket',
+                    status: 'Open',
+                    createdAt: Date.now() - 43200000,
+                    userId: 'test-user-1'
+                },
+                {
+                    id: 'ticket-3',
+                    title: 'Test Ticket 3',
+                    description: 'Third test ticket',
+                    status: 'In Progress',
+                    createdAt: Date.now() - 21600000,
+                    userId: 'test-user-1'
+                },
+                {
+                    id: 'ticket-4',
+                    title: 'Test Ticket 4',
+                    description: 'Fourth test ticket',
+                    status: 'Closed',
+                    createdAt: Date.now() - 10800000,
+                    userId: 'test-user-1'
+                }
+            ];
+            localStorage.setItem('tickets', JSON.stringify(testTickets));
+        }
+
+        // 1. CSS Feature Support Tests
+        async function runCssFeatureTests() {
+            testRunner.clearResults('css-feature-support');
+            document.getElementById('css-test-btn').disabled = true;
+            
+            await testRunner.describe('CSS Feature Support', async () => {
+                await testRunner.it('should support CSS Grid', async () => {
+                    const supportsGrid = testRunner.supportsCSSSyntax('display: grid');
+                    testRunner.expect(supportsGrid).toBeTruthy();
+                    testRunner.logResult('css-feature-support', 'ℹ CSS Grid is supported - statistics grid will work', 'info');
+                });
+
+                await testRunner.it('should support CSS Flexbox', async () => {
+                    const supportsFlex = testRunner.supportsCSSSyntax('display: flex');
+                    testRunner.expect(supportsFlex).toBeTruthy();
+                    testRunner.logResult('css-feature-support', 'ℹ CSS Flexbox is supported - card layouts will work', 'info');
+                });
+
+                await testRunner.it('should support CSS Custom Properties', async () => {
+                    const supportsCustomProps = testRunner.supportsCSSSyntax('--test-var: red');
+                    testRunner.expect(supportsCustomProps).toBeTruthy();
+                    testRunner.logResult('css-feature-support', 'ℹ CSS Custom Properties supported - design tokens will work', 'info');
+                });
+
+                await testRunner.it('should support CSS Transforms', async () => {
+                    const supportsTransform = testRunner.supportsCSSSyntax('transform: translateY(-4px) scale(1.02)');
+                    testRunner.expect(supportsTransform).toBeTruthy();
+                    testRunner.logResult('css-feature-support', 'ℹ CSS Transforms supported - hover animations will work', 'info');
+                });
+
+                await testRunner.it('should support CSS Transitions', async () => {
+                    const supportsTransition = testRunner.supportsCSSSyntax('transition: all 0.3s ease');
+                    testRunner.expect(supportsTransition).toBeTruthy();
+                    testRunner.logResult('css-feature-support', 'ℹ CSS Transitions supported - smooth animations will work', 'info');
+                });
+
+                await testRunner.it('should support border-radius', async () => {
+                    const supportsBorderRadius = testRunner.supportsCSSSyntax('border-radius: 12px');
+                    testRunner.expect(supportsBorderRadius).toBeTruthy();
+                });
+
+                await testRunner.it('should support box-shadow', async () => {
+                    const supportsBoxShadow = testRunner.supportsCSSSyntax('box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1)');
+                    testRunner.expect(supportsBoxShadow).toBeTruthy();
+                });
+
+                await testRunner.it('should support RGBA colors', async () => {
+                    const supportsRGBA = testRunner.supportsCSSSyntax('background: rgba(255, 255, 255, 0.95)');
+                    testRunner.expect(supportsRGBA).toBeTruthy();
+                });
+            });
+
+            document.getElementById('css-test-btn').disabled = false;
+        }
+
+        // 2. Statistics Card Rendering Tests
+        async function runStatisticsCardTests() {
+            testRunner.clearResults('statistics-card-rendering');
+            document.getElementById('stats-test-btn').disabled = true;
+            
+            await testRunner.describe('Statistics Card Rendering', async () => {
+                setupTestEnvironment();
+
+                await testRunner.it('should render statistics cards with proper structure', async () => {
+                    const card = document.createElement('div');
+                    card.className = 'stat-card';
+                    card.style.cssText = `
+                        background: white;
+                        border-radius: 12px;
+                        padding: 1.5rem;
+                        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                        display: flex;
+                        align-items: center;
+                        gap: 1rem;
+                    `;
+                    
+                    document.body.appendChild(card);
+                    
+                    const computedStyle = window.getComputedStyle(card);
+                    testRunner.expect(computedStyle.display).toBe('flex');
+                    testRunner.expect(computedStyle.borderRadius).toBe('12px');
+                    
+                    document.body.removeChild(card);
+                });
+
+                await testRunner.it('should render circular icon containers', async () => {
+                    const icon = document.createElement('div');
+                    icon.className = 'stat-icon';
+                    icon.style.cssText = `
+                        width: 48px;
+                        height: 48px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        background: #10b981;
+                    `;
+                    
+                    document.body.appendChild(icon);
+                    
+                    const computedStyle = window.getComputedStyle(icon);
+                    testRunner.expect(computedStyle.borderRadius).toBe('50%');
+                    testRunner.expect(computedStyle.width).toBe('48px');
+                    testRunner.expect(computedStyle.height).toBe('48px');
+                    
+                    document.body.removeChild(icon);
+                });
+
+                await testRunner.it('should support SVG icons', async () => {
+                    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    svg.setAttribute('width', '24');
+                    svg.setAttribute('height', '24');
+                    svg.setAttribute('viewBox', '0 0 24 24');
+                    
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', '12');
+                    circle.setAttribute('cy', '12');
+                    circle.setAttribute('r', '10');
+                    circle.setAttribute('fill', 'white');
+                    
+                    svg.appendChild(circle);
+                    document.body.appendChild(svg);
+                    
+                    testRunner.expect(svg.tagName).toBe('svg');
+                    testRunner.expect(circle.tagName).toBe('circle');
+                    
+                    document.body.removeChild(svg);
+                });
+
+                await testRunner.it('should handle hover effects on cards', async () => {
+                    const card = document.createElement('div');
+                    card.style.cssText = `
+                        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                        transition: box-shadow 0.2s ease;
+                    `;
+                    
+                    document.body.appendChild(card);
+                    
+                    // Simulate hover
+                    card.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+                    
+                    const computedStyle = window.getComputedStyle(card);
+                    testRunner.expect(computedStyle.boxShadow).toContain('rgba');
+                    
+                    document.body.removeChild(card);
+                });
+
+                await testRunner.it('should render stat values with large typography', async () => {
+                    const statValue = document.createElement('div');
+                    statValue.className = 'stat-value';
+                    statValue.style.cssText = `
+                        font-size: 2rem;
+                        font-weight: 700;
+                        color: #1a1a1a;
+                    `;
+                    statValue.textContent = '42';
+                    
+                    document.body.appendChild(statValue);
+                    
+                    const computedStyle = window.getComputedStyle(statValue);
+                    testRunner.expect(computedStyle.fontSize).toBe('32px');
+                    testRunner.expect(computedStyle.fontWeight).toBe('700');
+                    
+                    document.body.removeChild(statValue);
+                });
+            });
+
+            document.getElementById('stats-test-btn').disabled = false;
+        }
+
+        // 3. Responsive Layout Tests
+        async function runResponsiveLayoutTests() {
+            testRunner.clearResults('responsive-layout');
+            document.getElementById('responsive-test-btn').disabled = true;
+            
+            await testRunner.describe('Responsive Layout', async () => {
+                await testRunner.it('should support viewport meta tag', async () => {
+                    const viewportMeta = document.querySelector('meta[name="viewport"]');
+                    testRunner.expect(viewportMeta).toBeTruthy();
+                    testRunner.expect(viewportMeta.getAttribute('content')).toContain('width=device-width');
+                });
+
+                await testRunner.it('should support media queries', async () => {
+                    if (typeof window.matchMedia === 'function') {
+                        const mobileQuery = window.matchMedia('(max-width: 767px)');
+                        const tabletQuery = window.matchMedia('(min-width: 768px) and (max-width: 1023px)');
+                        const desktopQuery = window.matchMedia('(min-width: 1024px)');
+                        
+                        testRunner.expect(typeof mobileQuery.matches).toBe('boolean');
+                        testRunner.expect(typeof tabletQuery.matches).toBe('boolean');
+                        testRunner.expect(typeof desktopQuery.matches).toBe('boolean');
+                        
+                        testRunner.logResult('responsive-layout', 
+                            `ℹ Current viewport: Mobile=${mobileQuery.matches}, Tablet=${tabletQuery.matches}, Desktop=${desktopQuery.matches}`, 
+                            'info');
+                    } else {
+                        testRunner.logResult('responsive-layout', '⚠ matchMedia not supported - using viewport width fallback', 'warning');
+                        testRunner.expect(window.innerWidth).toBeGreaterThan(0);
+                    }
+                });
+
+                await testRunner.it('should create responsive grid layout', async () => {
+                    const grid = document.createElement('div');
+                    grid.className = 'stats-grid';
+                    grid.style.cssText = `
+                        display: grid;
+                        gap: 1.5rem;
+                        grid-template-columns: repeat(4, 1fr);
+                    `;
+                    
+                    document.body.appendChild(grid);
+                    
+                    const computedStyle = window.getComputedStyle(grid);
+                    testRunner.expect(computedStyle.display).toBe('grid');
+                    
+                    document.body.removeChild(grid);
+                });
+
+                await testRunner.it('should handle mobile layout (single column)', async () => {
+                    const grid = document.createElement('div');
+                    grid.style.cssText = `
+                        display: grid;
+                        gap: 1.5rem;
+                        grid-template-columns: 1fr;
+                    `;
+                    
+                    document.body.appendChild(grid);
+                    
+                    const computedStyle = window.getComputedStyle(grid);
+                    testRunner.expect(computedStyle.display).toBe('grid');
+                    
+                    document.body.removeChild(grid);
+                });
+
+                await testRunner.it('should handle tablet layout (two columns)', async () => {
+                    const grid = document.createElement('div');
+                    grid.style.cssText = `
+                        display: grid;
+                        gap: 1.5rem;
+                        grid-template-columns: repeat(2, 1fr);
+                    `;
+                    
+                    document.body.appendChild(grid);
+                    
+                    const computedStyle = window.getComputedStyle(grid);
+                    testRunner.expect(computedStyle.display).toBe('grid');
+                    
+                    document.body.removeChild(grid);
+                });
+
+                await testRunner.it('should handle touch targets for mobile', async () => {
+                    const button = document.createElement('button');
+                    button.style.cssText = `
+                        padding: 0.75rem 1.5rem;
+                        min-height: 44px;
+                        min-width: 44px;
+                    `;
+                    
+                    document.body.appendChild(button);
+                    
+                    const rect = button.getBoundingClientRect();
+                    testRunner.expect(rect.height).toBeGreaterThan(40);
+                    
+                    document.body.removeChild(button);
+                });
+
+                await testRunner.it('should adjust typography for mobile', async () => {
+                    const heading = document.createElement('h1');
+                    heading.style.cssText = `
+                        font-size: 1.5rem;
+                    `;
+                    heading.textContent = 'Welcome back, User!';
+                    
+                    document.body.appendChild(heading);
+                    
+                    const computedStyle = window.getComputedStyle(heading);
+                    testRunner.expect(computedStyle.fontSize).toBe('24px');
+                    
+                    document.body.removeChild(heading);
+                });
+            });
+
+            document.getElementById('responsive-test-btn').disabled = false;
+        }
+
+        // 4. LocalStorage Functionality Tests
+        async function runLocalStorageTests() {
+            testRunner.clearResults('localstorage-functionality');
+            document.getElementById('storage-test-btn').disabled = true;
+            
+            await testRunner.describe('LocalStorage Functionality', async () => {
+                setupTestEnvironment();
+
+                await testRunner.it('should support localStorage API', async () => {
+                    testRunner.expect(typeof localStorage).toBe('object');
+                    testRunner.expect(typeof localStorage.setItem).toBe('function');
+                    testRunner.expect(typeof localStorage.getItem).toBe('function');
+                    testRunner.expect(typeof localStorage.removeItem).toBe('function');
+                    testRunner.expect(typeof localStorage.clear).toBe('function');
+                });
+
+                await testRunner.it('should retrieve session data from localStorage', async () => {
+                    const sessionData = localStorage.getItem('ticketapp_session');
+                    testRunner.expect(sessionData).toBeTruthy();
+                    
+                    const session = JSON.parse(sessionData);
+                    testRunner.expect(session.user).toBeTruthy();
+                    testRunner.expect(session.user.username).toBe('testuser');
+                });
+
+                await testRunner.it('should retrieve ticket data from localStorage', async () => {
+                    const ticketData = localStorage.getItem('tickets');
+                    testRunner.expect(ticketData).toBeTruthy();
+                    
+                    const tickets = JSON.parse(ticketData);
+                    testRunner.expect(Array.isArray(tickets)).toBeTruthy();
+                    testRunner.expect(tickets.length).toBe(4);
+                });
+
+                await testRunner.it('should calculate statistics from localStorage data', async () => {
+                    const calculator = new TicketStatisticsCalculator();
+                    const stats = calculator.calculateStatistics();
+                    
+                    testRunner.expect(stats.total).toBe(4);
+                    testRunner.expect(stats.open).toBe(2);
+                    testRunner.expect(stats.inProgress).toBe(1);
+                    testRunner.expect(stats.closed).toBe(1);
+                });
+
+                await testRunner.it('should handle empty ticket data', async () => {
+                    localStorage.setItem('tickets', JSON.stringify([]));
+                    
+                    const calculator = new TicketStatisticsCalculator();
+                    const stats = calculator.calculateStatistics();
+                    
+                    testRunner.expect(stats.total).toBe(0);
+                    testRunner.expect(stats.open).toBe(0);
+                    testRunner.expect(stats.inProgress).toBe(0);
+                    testRunner.expect(stats.closed).toBe(0);
+                    
+                    // Restore test data
+                    setupTestEnvironment();
+                });
+
+                await testRunner.it('should handle corrupted localStorage data', async () => {
+                    localStorage.setItem('tickets', 'invalid-json');
+                    
+                    const calculator = new TicketStatisticsCalculator();
+                    const tickets = calculator.getTickets();
+                    
+                    testRunner.expect(Array.isArray(tickets)).toBeTruthy();
+                    testRunner.expect(tickets.length).toBe(0);
+                    
+                    // Restore test data
+                    setupTestEnvironment();
+                });
+
+                await testRunner.it('should handle missing localStorage data', async () => {
+                    localStorage.removeItem('tickets');
+                    
+                    const calculator = new TicketStatisticsCalculator();
+                    const tickets = calculator.getTickets();
+                    
+                    testRunner.expect(Array.isArray(tickets)).toBeTruthy();
+                    testRunner.expect(tickets.length).toBe(0);
+                    
+                    // Restore test data
+                    setupTestEnvironment();
+                });
+            });
+
+            document.getElementById('storage-test-btn').disabled = false;
+        }
+
+        // 5. Visual Consistency Tests
+        async function runVisualConsistencyTests() {
+            testRunner.clearResults('visual-consistency');
+            document.getElementById('visual-test-btn').disabled = true;
+            
+            await testRunner.describe('Visual Consistency', async () => {
+                await testRunner.it('should render consistent colors across browsers', async () => {
+                    const testElement = document.createElement('div');
+                    testElement.style.cssText = `
+                        background: #3b82f6;
+                        color: #ffffff;
+                    `;
+                    
+                    document.body.appendChild(testElement);
+                    
+                    const computedStyle = window.getComputedStyle(testElement);
+                    testRunner.expect(computedStyle.background).toContain('rgb');
+                    testRunner.expect(computedStyle.color).toContain('rgb');
+                    
+                    document.body.removeChild(testElement);
+                });
+
+                await testRunner.it('should render consistent fonts across browsers', async () => {
+                    const testElement = document.createElement('div');
+                    testElement.style.cssText = `
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                        font-size: 1rem;
+                        font-weight: 400;
+                    `;
+                    
+                    document.body.appendChild(testElement);
+                    
+                    const computedStyle = window.getComputedStyle(testElement);
+                    testRunner.expect(computedStyle.fontFamily).toBeTruthy();
+                    testRunner.expect(computedStyle.fontSize).toBe('16px');
+                    
+                    document.body.removeChild(testElement);
+                });
+
+                await testRunner.it('should render consistent spacing across browsers', async () => {
+                    const testElement = document.createElement('div');
+                    testElement.style.cssText = `
+                        padding: 1.5rem;
+                        margin: 2rem;
+                        gap: 1rem;
+                    `;
+                    
+                    document.body.appendChild(testElement);
+                    
+                    const computedStyle = window.getComputedStyle(testElement);
+                    testRunner.expect(computedStyle.padding).toBe('24px');
+                    testRunner.expect(computedStyle.margin).toBe('32px');
+                    
+                    document.body.removeChild(testElement);
+                });
+
+                await testRunner.it('should render consistent shadows across browsers', async () => {
+                    const testElement = document.createElement('div');
+                    testElement.style.cssText = `
+                        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+                    `;
+                    
+                    document.body.appendChild(testElement);
+                    
+                    const computedStyle = window.getComputedStyle(testElement);
+                    testRunner.expect(computedStyle.boxShadow).toContain('rgba');
+                    
+                    document.body.removeChild(testElement);
+                });
+
+                await testRunner.it('should render consistent button styles across browsers', async () => {
+                    const button = document.createElement('button');
+                    button.style.cssText = `
+                        background: #3b82f6;
+                        color: white;
+                        padding: 0.75rem 1.5rem;
+                        border-radius: 8px;
+                        border: none;
+                        cursor: pointer;
+                        font-weight: 500;
+                    `;
+                    button.textContent = 'Test Button';
+                    
+                    document.body.appendChild(button);
+                    
+                    const computedStyle = window.getComputedStyle(button);
+                    testRunner.expect(computedStyle.background).toContain('rgb');
+                    testRunner.expect(computedStyle.borderRadius).toBe('8px');
+                    testRunner.expect(computedStyle.cursor).toBe('pointer');
+                    
+                    document.body.removeChild(button);
+                });
+
+                await testRunner.it('should handle icon rendering consistently', async () => {
+                    const iconContainer = document.createElement('div');
+                    iconContainer.style.cssText = `
+                        width: 48px;
+                        height: 48px;
+                        border-radius: 50%;
+                        background: #10b981;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    `;
+                    
+                    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    svg.setAttribute('width', '24');
+                    svg.setAttribute('height', '24');
+                    svg.setAttribute('fill', 'white');
+                    
+                    iconContainer.appendChild(svg);
+                    document.body.appendChild(iconContainer);
+                    
+                    const computedStyle = window.getComputedStyle(iconContainer);
+                    testRunner.expect(computedStyle.display).toBe('flex');
+                    testRunner.expect(computedStyle.borderRadius).toBe('50%');
+                    
+                    document.body.removeChild(iconContainer);
+                });
+
+                await testRunner.it('should render animations consistently', async () => {
+                    const testElement = document.createElement('div');
+                    testElement.style.cssText = `
+                        transition: transform 0.3s ease, box-shadow 0.3s ease;
+                        transform: translateY(0);
+                    `;
+                    
+                    document.body.appendChild(testElement);
+                    
+                    const computedStyle = window.getComputedStyle(testElement);
+                    testRunner.expect(computedStyle.transition).toContain('transform');
+                    
+                    document.body.removeChild(testElement);
+                });
+            });
+
+            document.getElementById('visual-test-btn').disabled = false;
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            document.getElementById('all-tests-btn').disabled = true;
+            
+            testRunner.results = [];
+            testRunner.totalTests = 0;
+            testRunner.passedTests = 0;
+            testRunner.failedTests = 0;
+            testRunner.warningTests = 0;
+            
+            await runCssFeatureTests();
+            await runStatisticsCardTests();
+            await runResponsiveLayoutTests();
+            await runLocalStorageTests();
+            await runVisualConsistencyTests();
+            
+            testRunner.showSummary();
+            
+            document.getElementById('all-tests-btn').disabled = false;
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            displayBrowserInfo();
+        });
+    </script>
+</body>
+</html>

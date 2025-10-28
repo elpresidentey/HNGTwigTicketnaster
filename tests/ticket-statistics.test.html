@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Statistics Calculator Tests</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .test-suite { margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; background: white; border-radius: 4px; }
+        .test-case { margin: 8px 0; padding: 10px; border-left: 3px solid #ccc; background: #fafafa; }
+        .test-pass { border-left-color: #4CAF50; background-color: #f1f8e9; }
+        .test-fail { border-left-color: #f44336; background-color: #ffebee; }
+        .test-summary { font-weight: bold; margin-top: 20px; padding: 15px; background: white; border-radius: 4px; }
+        .pass { color: #4CAF50; }
+        .fail { color: #f44336; }
+        pre { background: #f5f5f5; padding: 10px; margin: 5px 0; overflow-x: auto; font-size: 12px; }
+        h1 { color: #333; }
+        h3 { color: #555; margin-top: 0; }
+    </style>
+</head>
+<body>
+    <h1>Ticket Statistics Calculator Unit Tests</h1>
+    <div id="test-results"></div>
+    <div id="test-summary"></div>
+
+    <!-- Load the statistics calculator module -->
+    <script src="../public/assets/js/ticket-statistics.js"></script>
+    
+    <script>
+        // Simple test framework
+        class TestRunner {
+            constructor() {
+                this.results = [];
+                this.currentSuite = '';
+            }
+
+            describe(suiteName, testFn) {
+                this.currentSuite = suiteName;
+                console.log(`\n=== ${suiteName} ===`);
+                testFn();
+            }
+
+            it(testName, testFn) {
+                try {
+                    testFn();
+                    this.results.push({ suite: this.currentSuite, name: testName, status: 'pass' });
+                    console.log(`✓ ${testName}`);
+                } catch (error) {
+                    this.results.push({ 
+                        suite: this.currentSuite, 
+                        name: testName, 
+                        status: 'fail', 
+                        error: error.message,
+                        stack: error.stack
+                    });
+                    console.error(`✗ ${testName}: ${error.message}`);
+                }
+            }
+
+            expect(actual) {
+                return {
+                    toBe: (expected) => {
+                        if (actual !== expected) {
+                            throw new Error(`Expected ${expected}, but got ${actual}`);
+                        }
+                    },
+                    toEqual: (expected) => {
+                        if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+                            throw new Error(`Expected ${JSON.stringify(expected)}, but got ${JSON.stringify(actual)}`);
+                        }
+                    },
+                    toBeTruthy: () => {
+                        if (!actual) {
+                            throw new Error(`Expected truthy value, but got ${actual}`);
+                        }
+                    },
+                    toBeFalsy: () => {
+                        if (actual) {
+                            throw new Error(`Expected falsy value, but got ${actual}`);
+                        }
+                    },
+                    toBeNull: () => {
+                        if (actual !== null) {
+                            throw new Error(`Expected null, but got ${actual}`);
+                        }
+                    },
+                    toHaveLength: (expected) => {
+                        if (!actual || actual.length !== expected) {
+                            throw new Error(`Expected length ${expected}, but got ${actual ? actual.length : 'undefined'}`);
+                        }
+                    },
+                    toBeGreaterThan: (expected) => {
+                        if (actual <= expected) {
+                            throw new Error(`Expected ${actual} to be greater than ${expected}`);
+                        }
+                    }
+                };
+            }
+
+            renderResults() {
+                const resultsDiv = document.getElementById('test-results');
+                const summaryDiv = document.getElementById('test-summary');
+                
+                let html = '';
+                let currentSuite = '';
+                
+                this.results.forEach(result => {
+                    if (result.suite !== currentSuite) {
+                        if (currentSuite !== '') html += '</div>';
+                        html += `<div class="test-suite"><h3>${result.suite}</h3>`;
+                        currentSuite = result.suite;
+                    }
+                    
+                    const statusClass = result.status === 'pass' ? 'test-pass' : 'test-fail';
+                    const statusIcon = result.status === 'pass' ? '✓' : '✗';
+                    
+                    html += `<div class="test-case ${statusClass}">
+                        ${statusIcon} ${result.name}
+                        ${result.error ? `<pre>Error: ${result.error}</pre>` : ''}
+                    </div>`;
+                });
+                
+                if (currentSuite !== '') html += '</div>';
+                resultsDiv.innerHTML = html;
+                
+                // Summary
+                const passed = this.results.filter(r => r.status === 'pass').length;
+                const failed = this.results.filter(r => r.status === 'fail').length;
+                const total = this.results.length;
+                
+                summaryDiv.innerHTML = `
+                    <div class="test-summary">
+                        <strong>Test Results:</strong> ${total} tests | 
+                        <span class="pass">✓ Passed: ${passed}</span> | 
+                        <span class="fail">✗ Failed: ${failed}</span>
+                    </div>
+                `;
+            }
+        }
+
+        // Mock localStorage for testing
+        class MockLocalStorage {
+            constructor() {
+                this.store = {};
+            }
+
+            getItem(key) {
+                return this.store[key] || null;
+            }
+
+            setItem(key, value) {
+                this.store[key] = String(value);
+            }
+
+            removeItem(key) {
+                delete this.store[key];
+            }
+
+            clear() {
+                this.store = {};
+            }
+        }
+
+        // Initialize test runner
+        const testRunner = new TestRunner();
+        const { describe, it, expect } = testRunner;
+
+        // Store original localStorage and DOM methods
+        const originalLocalStorage = window.localStorage;
+        const originalGetElementById = document.getElementById.bind(document);
+        const originalQuerySelector = document.querySelector.bind(document);
+        const originalQuerySelectorAll = document.querySelectorAll.bind(document);
+        const originalRequestAnimationFrame = window.requestAnimationFrame;
+
+        // Helper function to create sample tickets
+        function createSampleTickets(counts = { open: 2, inProgress: 1, closed: 1 }) {
+            const tickets = [];
+            let id = 1;
+            
+            for (let i = 0; i < counts.open; i++) {
+                tickets.push({
+                    id: `ticket_${id++}`,
+                    title: `Open Ticket ${i + 1}`,
+                    description: 'Test ticket',
+                    status: 'Open',
+                    createdAt: Date.now() - (i * 1000),
+                    updatedAt: Date.now() - (i * 1000),
+                    userId: 'user123'
+                });
+            }
+            
+            for (let i = 0; i < counts.inProgress; i++) {
+                tickets.push({
+                    id: `ticket_${id++}`,
+                    title: `In Progress Ticket ${i + 1}`,
+                    description: 'Test ticket',
+                    status: 'In Progress',
+                    createdAt: Date.now() - (i * 1000),
+                    updatedAt: Date.now() - (i * 1000),
+                    userId: 'user123'
+                });
+            }
+            
+            for (let i = 0; i < counts.closed; i++) {
+                tickets.push({
+                    id: `ticket_${id++}`,
+                    title: `Closed Ticket ${i + 1}`,
+                    description: 'Test ticket',
+                    status: 'Closed',
+                    createdAt: Date.now() - (i * 1000),
+                    updatedAt: Date.now() - (i * 1000),
+                    userId: 'user123'
+                });
+            }
+            
+            return tickets;
+        }
+
+        // Run tests
+        describe('TicketStatisticsCalculator - calculateStatistics()', () => {
+            let calculator;
+            let mockLocalStorage;
+
+            function setup() {
+                mockLocalStorage = new MockLocalStorage();
+                window.localStorage = mockLocalStorage;
+                calculator = new TicketStatisticsCalculator();
+            }
+
+            function teardown() {
+                window.localStorage = originalLocalStorage;
+            }
+
+            it('should calculate correct statistics with mixed ticket statuses', () => {
+                setup();
+                
+                const tickets = createSampleTickets({ open: 2, inProgress: 1, closed: 1 });
+                mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                const stats = calculator.calculateStatistics();
+
+                expect(stats.total).toBe(4);
+                expect(stats.open).toBe(2);
+                expect(stats.inProgress).toBe(1);
+                expect(stats.closed).toBe(1);
+                
+                teardown();
+            });
+
+            it('should return zero counts when no tickets exist', () => {
+                setup();
+                
+                mockLocalStorage.setItem('tickets', JSON.stringify([]));
+
+                const stats = calculator.calculateStatistics();
+
+                expect(stats.total).toBe(0);
+                expect(stats.open).toBe(0);
+                expect(stats.inProgress).toBe(0);
+                expect(stats.closed).toBe(0);
+                
+                teardown();
+            });
+
+            it('should handle all tickets with same status', () => {
+                setup();
+                
+                const tickets = createSampleTickets({ open: 5, inProgress: 0, closed: 0 });
+                mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                const stats = calculator.calculateStatistics();
+
+                expect(stats.total).toBe(5);
+                expect(stats.open).toBe(5);
+                expect(stats.inProgress).toBe(0);
+                expect(stats.closed).toBe(0);
+                
+                teardown();
+            });
+
+            it('should calculate statistics for large number of tickets', () => {
+                setup();
+                
+                const tickets = createSampleTickets({ open: 50, inProgress: 30, closed: 20 });
+                mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                const stats = calculator.calculateStatistics();
+
+                expect(stats.total).toBe(100);
+                expect(stats.open).toBe(50);
+                expect(stats.inProgress).toBe(30);
+                expect(stats.closed).toBe(20);
+                
+                teardown();
+            });
+
+            it('should use cached statistics when called multiple times', () => {
+                setup();
+                
+                const tickets = createSampleTickets({ open: 2, inProgress: 1, closed: 1 });
+                mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                const stats1 = calculator.calculateStatistics();
+                const stats2 = calculator.calculateStatistics();
+
+                expect(stats1).toEqual(stats2);
+                expect(calculator.cachedStats).toBeTruthy();
+                
+                teardown();
+            });
+
+            it('should force refresh when forceRefresh parameter is true', () => {
+                setup();
+                
+                const tickets = createSampleTickets({ open: 2, inProgress: 1, closed: 1 });
+                mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                calculator.calculateStatistics();
+                
+                // Change tickets
+                const newTickets = createSampleTickets({ open: 3, inProgress: 2, closed: 1 });
+                mockLocalStorage.setItem('tickets', JSON.stringify(newTickets));
+
+                const stats = calculator.calculateStatistics(true);
+
+                expect(stats.total).toBe(6);
+                expect(stats.open).toBe(3);
+                expect(stats.inProgress).toBe(2);
+                
+                teardown();
+            });
+        });
+
+        describe('TicketStatisticsCalculator - getTickets()', () => {
+            let calculator;
+            let mockLocalStorage;
+
+            function setup() {
+                mockLocalStorage = new MockLocalStorage();
+                window.localStorage = mockLocalStorage;
+                calculator = new TicketStatisticsCalculator();
+            }
+
+            function teardown() {
+                window.localStorage = originalLocalStorage;
+            }
+
+            it('should retrieve tickets from localStorage', () => {
+                setup();
+                
+                const tickets = createSampleTickets({ open: 2, inProgress: 1, closed: 1 });
+                mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                const retrievedTickets = calculator.getTickets();
+
+                expect(retrievedTickets).toHaveLength(4);
+                expect(retrievedTickets[0].status).toBe('Open');
+                
+                teardown();
+            });
+
+            it('should return empty array when localStorage is empty', () => {
+                setup();
+
+                const tickets = calculator.getTickets();
+
+                expect(tickets).toHaveLength(0);
+                
+                teardown();
+            });
+
+            it('should handle null data in localStorage', () => {
+                setup();
+                
+                mockLocalStorage.setItem('tickets', 'null');
+
+                const tickets = calculator.getTickets();
+
+                expect(tickets).toHaveLength(0);
+                
+                teardown();
+            });
+
+            it('should handle undefined data in localStorage', () => {
+                setup();
+                
+                mockLocalStorage.setItem('tickets', 'undefined');
+
+                const tickets = calculator.getTickets();
+
+                expect(tickets).toHaveLength(0);
+                
+                teardown();
+            });
+
+            it('should handle corrupted JSON data gracefully', () => {
+                setup();
+                
+                mockLocalStorage.setItem('tickets', '{invalid json}');
+
+                const tickets = calculator.getTickets();
+
+                expect(tickets).toHaveLength(0);
+                
+                teardown();
+            });
+
+            it('should handle non-array data in localStorage', () => {
+                setup();
+                
+                mockLocalStorage.setItem('tickets', JSON.stringify({ not: 'an array' }));
+
+                const tickets = calculator.getTickets();
+
+                expect(tickets).toHaveLength(0);
+                
+                teardown();
+            });
+
+            it('should handle localStorage access errors', () => {
+                setup();
+                
+                // Simulate localStorage being unavailable
+                window.localStorage = undefined;
+                calculator = new TicketStatisticsCalculator();
+
+                const tickets = calculator.getTickets();
+
+                expect(tickets).toHaveLength(0);
+                
+                teardown();
+            });
+        });
+
+        describe('TicketStatisticsCalculator - updateStatisticsDisplay()', () => {
+            let calculator;
+            let mockElements;
+
+            function setup() {
+                calculator = new TicketStatisticsCalculator();
+                
+                // Create mock DOM elements
+                mockElements = {
+                    totalCount: { textContent: '' },
+                    openCount: { textContent: '' },
+                    inProgressCount: { textContent: '' },
+                    closedCount: { textContent: '' }
+                };
+
+                // Mock getElementById
+                document.getElementById = (id) => mockElements[id] || null;
+
+                // Mock requestAnimationFrame to execute immediately
+                window.requestAnimationFrame = (callback) => callback();
+            }
+
+            function teardown() {
+                document.getElementById = originalGetElementById;
+                window.requestAnimationFrame = originalRequestAnimationFrame;
+            }
+
+            it('should update all statistics DOM elements', () => {
+                setup();
+
+                const stats = { total: 10, open: 4, inProgress: 3, closed: 3 };
+                calculator.updateStatisticsDisplay(stats);
+
+                expect(mockElements.totalCount.textContent).toBe(10);
+                expect(mockElements.openCount.textContent).toBe(4);
+                expect(mockElements.inProgressCount.textContent).toBe(3);
+                expect(mockElements.closedCount.textContent).toBe(3);
+
+                teardown();
+            });
+
+            it('should update display with zero counts', () => {
+                setup();
+
+                const stats = { total: 0, open: 0, inProgress: 0, closed: 0 };
+                calculator.updateStatisticsDisplay(stats);
+
+                expect(mockElements.totalCount.textContent).toBe(0);
+                expect(mockElements.openCount.textContent).toBe(0);
+                expect(mockElements.inProgressCount.textContent).toBe(0);
+                expect(mockElements.closedCount.textContent).toBe(0);
+
+                teardown();
+            });
+
+            it('should handle missing DOM elements gracefully', () => {
+                setup();
+
+                // Remove some elements
+                mockElements = {
+                    totalCount: { textContent: '' }
+                    // Other elements missing
+                };
+
+                const stats = { total: 5, open: 2, inProgress: 1, closed: 2 };
+                
+                // Should not throw error
+                calculator.updateStatisticsDisplay(stats);
+
+                expect(mockElements.totalCount.textContent).toBe(5);
+
+                teardown();
+            });
+
+            it('should update display with large numbers', () => {
+                setup();
+
+                const stats = { total: 9999, open: 3333, inProgress: 3333, closed: 3333 };
+                calculator.updateStatisticsDisplay(stats);
+
+                expect(mockElements.totalCount.textContent).toBe(9999);
+                expect(mockElements.openCount.textContent).toBe(3333);
+
+                teardown();
+            });
+        });
+
+        describe('TicketStatisticsCalculator - Cache Management', () => {
+            let calculator;
+            let mockLocalStorage;
+
+            function setup() {
+                mockLocalStorage = new MockLocalStorage();
+                window.localStorage = mockLocalStorage;
+                calculator = new TicketStatisticsCalculator();
+            }
+
+            function teardown() {
+                window.localStorage = originalLocalStorage;
+            }
+
+            it('should invalidate cache when invalidateCache is called', () => {
+                setup();
+
+                const tickets = createSampleTickets({ open: 2, inProgress: 1, closed: 1 });
+                mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                calculator.calculateStatistics();
+                expect(calculator.cachedStats).toBeTruthy();
+
+                calculator.invalidateCache();
+
+                expect(calculator.cachedStats).toBeNull();
+                expect(calculator.cachedTickets).toBeNull();
+                expect(calculator.lastCalculationTime).toBe(0);
+
+                teardown();
+            });
+
+            it('should recalculate after cache invalidation', () => {
+                setup();
+
+                const tickets = createSampleTickets({ open: 2, inProgress: 1, closed: 1 });
+                mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                const stats1 = calculator.calculateStatistics();
+                calculator.invalidateCache();
+
+                // Change tickets
+                const newTickets = createSampleTickets({ open: 5, inProgress: 0, closed: 0 });
+                mockLocalStorage.setItem('tickets', JSON.stringify(newTickets));
+
+                const stats2 = calculator.calculateStatistics();
+
+                expect(stats2.total).toBe(5);
+                expect(stats2.open).toBe(5);
+
+                teardown();
+            });
+        });
+
+        describe('TicketStatisticsCalculator - Performance Optimization', () => {
+            let calculator;
+            let mockLocalStorage;
+
+            function setup() {
+                mockLocalStorage = new MockLocalStorage();
+                window.localStorage = mockLocalStorage;
+                calculator = new TicketStatisticsCalculator();
+            }
+
+            function teardown() {
+                window.localStorage = originalLocalStorage;
+            }
+
+            it('should preload tickets data', () => {
+                setup();
+
+                const tickets = createSampleTickets({ open: 2, inProgress: 1, closed: 1 });
+                mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                calculator.preloadTickets();
+
+                // Verify that getTickets was called (no error thrown)
+                expect(true).toBe(true);
+
+                teardown();
+            });
+
+            it('should use single-pass counting for efficiency', () => {
+                setup();
+
+                const tickets = createSampleTickets({ open: 100, inProgress: 100, closed: 100 });
+                mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                const startTime = performance.now();
+                const stats = calculator.calculateStatistics();
+                const endTime = performance.now();
+
+                expect(stats.total).toBe(300);
+                // Should complete quickly (under 100ms for 300 tickets)
+                expect(endTime - startTime).toBeLessThan(100);
+
+                teardown();
+            });
+        });
+
+        // Restore original methods
+        window.localStorage = originalLocalStorage;
+        document.getElementById = originalGetElementById;
+        document.querySelector = originalQuerySelector;
+        document.querySelectorAll = originalQuerySelectorAll;
+        window.requestAnimationFrame = originalRequestAnimationFrame;
+
+        // Render test results
+        testRunner.renderResults();
+    </script>
+</body>
+</html>

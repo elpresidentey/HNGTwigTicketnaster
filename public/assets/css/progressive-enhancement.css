@@ -1,0 +1,621 @@
+/* ===== PROGRESSIVE ENHANCEMENT AND BROWSER COMPATIBILITY ===== */
+
+/* ===== CSS FEATURE DETECTION WITH @SUPPORTS ===== */
+
+/* Base styles - work in all browsers */
+:root {
+  /* Fallback colors for older browsers */
+  --fallback-primary: #3B82F6;
+  --fallback-secondary: #10B981;
+  --fallback-white: #FFFFFF;
+  --fallback-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --fallback-radius: 8px;
+  --fallback-transition: 0.3s ease;
+}
+
+/* ===== CLIP-PATH PROGRESSIVE ENHANCEMENT ===== */
+
+/* Base hero section without clip-path (fallback) */
+.hero-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  color: var(--fallback-white);
+}
+
+/* Enhanced hero section with clip-path support */
+@supports (clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%)) {
+  .hero-section {
+    clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+  }
+  
+  .hero-section::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    background: var(--fallback-white);
+    clip-path: polygon(0 100%, 100% 100%, 100% 0, 0 20%);
+    z-index: 2;
+  }
+}
+
+/* Fallback SVG wave for browsers without clip-path */
+@supports not (clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%)) {
+  .hero-wave-svg {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    z-index: 2;
+  }
+  
+  .hero-wave-svg svg {
+    width: 100%;
+    height: 100%;
+    fill: var(--fallback-white);
+  }
+}
+
+/* ===== BACKDROP-FILTER PROGRESSIVE ENHANCEMENT ===== */
+
+/* Base decorative circles without backdrop-filter (fallback) */
+.decorative-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: float 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Enhanced decorative circles with backdrop-filter support */
+@supports (backdrop-filter: blur(10px)) {
+  .decorative-circle {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+  }
+  
+  .hero-badge {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  .cta-secondary {
+    backdrop-filter: blur(10px);
+  }
+  
+  .footer-social-link {
+    backdrop-filter: blur(10px);
+  }
+}
+
+/* Fallback for browsers without backdrop-filter */
+@supports not (backdrop-filter: blur(10px)) {
+  .decorative-circle {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  .hero-badge {
+    background: rgba(255, 255, 255, 0.15);
+  }
+  
+  .cta-secondary {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  .footer-social-link {
+    background: rgba(255, 255, 255, 0.15);
+  }
+}
+
+/* ===== CSS GRID PROGRESSIVE ENHANCEMENT ===== */
+
+/* Base layout using flexbox (fallback) */
+.feature-boxes-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Enhanced layout with CSS Grid support */
+@supports (display: grid) {
+  .feature-boxes-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--landing-space-xl, 3rem);
+  }
+  
+  @media (min-width: 768px) {
+    .feature-boxes-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .feature-boxes-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  
+  .footer-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--landing-space-2xl, 4rem);
+  }
+}
+
+/* ===== CSS CUSTOM PROPERTIES PROGRESSIVE ENHANCEMENT ===== */
+
+/* Fallback styles for browsers without CSS custom properties */
+.cta-primary {
+  background: #3B82F6;
+  color: #FFFFFF;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.cta-secondary {
+  background: transparent;
+  color: #FFFFFF;
+  border: 2px solid #FFFFFF;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.feature-box {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+/* Enhanced styles with CSS custom properties support */
+@supports (color: var(--test)) {
+  .cta-primary {
+    background: var(--gradient-secondary, #3B82F6);
+    color: var(--landing-white, #FFFFFF);
+    padding: var(--landing-space-md, 1rem) var(--landing-space-xl, 2rem);
+    border-radius: var(--landing-radius-md, 8px);
+    transition: all var(--landing-transition-base, 0.3s ease);
+  }
+  
+  .cta-secondary {
+    color: var(--landing-white, #FFFFFF);
+    border: 2px solid var(--landing-white, #FFFFFF);
+    padding: var(--landing-space-md, 1rem) var(--landing-space-xl, 2rem);
+    border-radius: var(--landing-radius-md, 8px);
+    transition: all var(--landing-transition-base, 0.3s ease);
+  }
+  
+  .feature-box {
+    background: var(--landing-white, #FFFFFF);
+    border-radius: var(--landing-radius-lg, 16px);
+    padding: var(--landing-space-xl, 2rem);
+    box-shadow: var(--landing-shadow-md, 0 10px 25px rgba(0, 0, 0, 0.1));
+    transition: all var(--landing-transition-base, 0.3s ease);
+  }
+}
+
+/* ===== FLEXBOX PROGRESSIVE ENHANCEMENT ===== */
+
+/* Base layout for older browsers */
+.hero-actions {
+  text-align: center;
+}
+
+.hero-actions .cta-btn {
+  display: inline-block;
+  margin: 0.5rem;
+}
+
+/* Enhanced layout with flexbox support */
+@supports (display: flex) {
+  .hero-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--landing-space-md, 1rem);
+    align-items: center;
+  }
+  
+  @media (min-width: 768px) {
+    .hero-actions {
+      flex-direction: row;
+      justify-content: center;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .hero-actions {
+      justify-content: flex-start;
+    }
+  }
+  
+  .hero-actions .cta-btn {
+    margin: 0;
+  }
+}
+
+/* ===== TRANSFORM PROGRESSIVE ENHANCEMENT ===== */
+
+/* Base hover effects without transforms (fallback) */
+.feature-box:hover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.cta-btn:hover {
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
+
+/* Enhanced hover effects with transform support */
+@supports (transform: translateY(-5px)) {
+  .feature-box:hover {
+    transform: translateY(-5px);
+  }
+  
+  .cta-primary:hover {
+    transform: translateY(-3px) scale(1.02);
+  }
+  
+  .cta-secondary:hover {
+    transform: translateY(-3px) scale(1.02);
+  }
+  
+  .footer-social-link:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* ===== GRADIENT PROGRESSIVE ENHANCEMENT ===== */
+
+/* Base colors without gradients (fallback) */
+.hero-section {
+  background: #667eea;
+}
+
+.cta-primary {
+  background: #3B82F6;
+}
+
+/* Enhanced styles with gradient support */
+@supports (background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)) {
+  .hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  .cta-primary {
+    background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+  }
+  
+  .feature-box-icon {
+    background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+  }
+}
+
+/* ===== ANIMATION PROGRESSIVE ENHANCEMENT ===== */
+
+/* Base styles without animations (fallback) */
+.decorative-circle {
+  opacity: 0.1;
+}
+
+.hero-badge,
+.hero-title,
+.hero-description-enhanced,
+.hero-actions {
+  opacity: 1;
+}
+
+/* Enhanced styles with animation support */
+@supports (animation: fadeIn 1s ease) {
+  .decorative-circle {
+    opacity: 0.1;
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .hero-badge {
+    animation: fade-in-up 0.8s ease-out 0.2s both;
+  }
+  
+  .title-line {
+    animation: fade-in-up 0.8s ease-out both;
+  }
+  
+  .title-line:nth-child(1) { animation-delay: 0.4s; }
+  .title-line:nth-child(2) { animation-delay: 0.6s; }
+  .title-line:nth-child(3) { animation-delay: 0.8s; }
+  
+  .hero-description-enhanced {
+    animation: fade-in-up 0.8s ease-out 1s both;
+  }
+  
+  .hero-actions {
+    animation: fade-in-up 0.8s ease-out 1.8s both;
+  }
+}
+
+/* ===== OLDER BROWSER COMPATIBILITY ===== */
+
+/* Internet Explorer 11 compatibility */
+@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+  .hero-section {
+    background: #667eea; /* Solid color fallback for IE11 */
+  }
+  
+  .feature-boxes-grid {
+    display: block; /* Block layout for IE11 */
+  }
+  
+  .feature-box {
+    margin-bottom: 2rem;
+    width: 100%;
+  }
+  
+  .hero-actions {
+    text-align: center;
+  }
+  
+  .cta-btn {
+    display: inline-block;
+    margin: 0.5rem;
+  }
+}
+
+/* Safari-specific fixes */
+@supports (-webkit-appearance: none) {
+  .decorative-circle {
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  .hero-badge {
+    -webkit-backdrop-filter: blur(10px);
+  }
+}
+
+/* Firefox-specific fixes */
+@-moz-document url-prefix() {
+  .decorative-circle {
+    background: rgba(255, 255, 255, 0.2); /* Stronger fallback for Firefox */
+  }
+}
+
+/* ===== REDUCED MOTION ACCESSIBILITY ===== */
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .decorative-circle {
+    animation: none;
+  }
+  
+  .hero-badge,
+  .title-line,
+  .hero-description-enhanced,
+  .hero-actions {
+    animation: none;
+    opacity: 1;
+  }
+  
+  .feature-box:hover,
+  .cta-btn:hover,
+  .footer-social-link:hover {
+    transform: none;
+  }
+}
+
+/* ===== HIGH CONTRAST MODE ACCESSIBILITY ===== */
+
+/* Windows High Contrast Mode */
+@media (prefers-contrast: high) {
+  .hero-section {
+    background: #000080 !important; /* High contrast blue */
+    color: #FFFFFF !important;
+  }
+  
+  .cta-primary {
+    background: #0000FF !important;
+    color: #FFFFFF !important;
+    border: 2px solid #FFFFFF !important;
+  }
+  
+  .cta-secondary {
+    background: transparent !important;
+    color: #FFFFFF !important;
+    border: 3px solid #FFFFFF !important;
+  }
+  
+  .feature-box {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    border: 2px solid #000000 !important;
+  }
+  
+  .decorative-circle {
+    border: 2px solid #FFFFFF !important;
+    background: rgba(255, 255, 255, 0.3) !important;
+  }
+}
+
+/* ===== PRINT STYLES ===== */
+
+@media print {
+  /* Remove all animations and transitions for print */
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+  
+  /* Simplify backgrounds for print */
+  .hero-section {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    clip-path: none !important;
+  }
+  
+  .hero-section::before,
+  .hero-section::after {
+    display: none !important;
+  }
+  
+  .decorative-circle {
+    display: none !important;
+  }
+  
+  /* Ensure good contrast for print */
+  .cta-btn {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    border: 2px solid #000000 !important;
+  }
+  
+  .feature-box {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+    box-shadow: none !important;
+  }
+  
+  /* Optimize layout for print */
+  .feature-boxes-grid {
+    display: block !important;
+  }
+  
+  .feature-box {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+}
+
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+
+/* GPU acceleration for smooth animations */
+@supports (transform: translateZ(0)) {
+  .feature-box,
+  .cta-btn,
+  .decorative-circle {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+  
+  .feature-box:hover,
+  .cta-btn:hover {
+    will-change: transform, box-shadow;
+  }
+}
+
+/* Optimize repaints and reflows */
+.hero-section,
+.feature-box,
+.cta-btn {
+  contain: layout style paint;
+}
+
+/* Preload critical fonts */
+@supports (font-display: swap) {
+  @font-face {
+    font-family: 'System';
+    src: local('system-ui'), local('-apple-system'), local('BlinkMacSystemFont');
+    font-display: swap;
+  }
+}
+
+/* ===== JAVASCRIPT FALLBACKS ===== */
+
+/* Styles for when JavaScript is disabled */
+.no-js .hero-badge,
+.no-js .title-line,
+.no-js .hero-description-enhanced,
+.no-js .hero-actions {
+  opacity: 1 !important;
+  animation: none !important;
+}
+
+.no-js .decorative-circle {
+  animation: none !important;
+  opacity: 0.1 !important;
+}
+
+/* ===== TOUCH DEVICE OPTIMIZATIONS ===== */
+
+@media (hover: none) and (pointer: coarse) {
+  /* Larger touch targets for mobile */
+  .cta-btn {
+    min-height: 48px;
+    padding: 1rem 1.5rem;
+  }
+  
+  .footer-social-link {
+    min-width: 48px;
+    min-height: 48px;
+  }
+  
+  /* Remove hover effects on touch devices */
+  .feature-box:hover,
+  .cta-btn:hover,
+  .footer-social-link:hover {
+    transform: none;
+    box-shadow: inherit;
+  }
+  
+  /* Add active states for touch feedback */
+  .feature-box:active,
+  .cta-btn:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+}
+
+/* ===== NETWORK-AWARE OPTIMIZATIONS ===== */
+
+/* Reduce animations on slow connections */
+@media (prefers-reduced-data: reduce) {
+  .decorative-circle {
+    animation: none;
+    opacity: 0.05;
+  }
+  
+  .hero-badge,
+  .title-line,
+  .hero-description-enhanced,
+  .hero-actions {
+    animation: none;
+    opacity: 1;
+  }
+  
+  /* Simplify gradients to solid colors */
+  .hero-section {
+    background: #667eea;
+  }
+  
+  .cta-primary {
+    background: #3B82F6;
+  }
+}

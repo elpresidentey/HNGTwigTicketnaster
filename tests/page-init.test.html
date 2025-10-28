@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Initialization Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { padding: 10px; margin: 5px 0; border-radius: 4px; }
+        .pass { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .fail { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .js-only { display: none; }
+        .js .js-only { display: block; }
+        .no-js .no-js-only { display: block; }
+        .no-js-only { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Page Initialization Test</h1>
+    
+    <div id="test-results">
+        <div class="test-result info">Running tests...</div>
+    </div>
+
+    <div class="js-only">
+        <div class="test-result info">JavaScript is enabled - this message should be visible</div>
+    </div>
+
+    <div class="no-js-only">
+        <div class="test-result info">JavaScript is disabled - this message should NOT be visible if JS is working</div>
+    </div>
+
+    <!-- Include the scripts we're testing -->
+    <script src="../public/assets/js/feature-detect.js"></script>
+    <script src="../public/assets/js/utils.js"></script>
+    <script src="../public/assets/js/progressive-enhancement.js"></script>
+    <script src="../public/assets/js/page-init.js"></script>
+
+    <script>
+        // Test runner
+        const results = [];
+        const resultsContainer = document.getElementById('test-results');
+
+        function addResult(test, passed, message) {
+            results.push({ test, passed, message });
+            const div = document.createElement('div');
+            div.className = `test-result ${passed ? 'pass' : 'fail'}`;
+            div.textContent = `${passed ? '✓' : '✗'} ${test}: ${message}`;
+            resultsContainer.appendChild(div);
+        }
+
+        function runTests() {
+            // Clear initial message
+            resultsContainer.innerHTML = '';
+
+            // Test 1: JavaScript availability detection
+            const hasJsClass = document.documentElement.classList.contains('js');
+            const noJsClass = document.documentElement.classList.contains('no-js');
+            addResult(
+                'JavaScript Detection',
+                hasJsClass && !noJsClass,
+                hasJsClass && !noJsClass ? 'HTML has "js" class and no "no-js" class' : 'JavaScript detection failed'
+            );
+
+            // Test 2: Feature detection
+            const hasFeatures = window.detectedFeatures !== undefined;
+            addResult(
+                'Feature Detection',
+                hasFeatures,
+                hasFeatures ? 'Features detected and stored globally' : 'Feature detection failed'
+            );
+
+            // Test 3: Progressive enhancement initialization
+            const hasProgressiveEnhancement = window.progressiveEnhancement !== undefined;
+            addResult(
+                'Progressive Enhancement',
+                hasProgressiveEnhancement,
+                hasProgressiveEnhancement ? 'Progressive enhancement initialized' : 'Progressive enhancement not found'
+            );
+
+            // Test 4: Page initializer
+            const hasPageInitializer = window.pageInitializer !== undefined;
+            addResult(
+                'Page Initializer',
+                hasPageInitializer,
+                hasPageInitializer ? 'Page initializer available' : 'Page initializer not found'
+            );
+
+            // Test 5: localStorage detection
+            const hasLocalStorageClass = document.documentElement.classList.contains('has-localstorage') ||
+                                       document.documentElement.classList.contains('no-localstorage');
+            addResult(
+                'localStorage Detection',
+                hasLocalStorageClass,
+                hasLocalStorageClass ? 'localStorage capability detected' : 'localStorage detection failed'
+            );
+
+            // Test 6: Touch detection
+            const hasTouchClass = document.documentElement.classList.contains('has-touch') ||
+                                document.documentElement.classList.contains('no-touch');
+            addResult(
+                'Touch Detection',
+                hasTouchClass,
+                hasTouchClass ? 'Touch capability detected' : 'Touch detection failed'
+            );
+
+            // Test 7: CSS feature detection
+            const hasFlexboxClass = document.documentElement.classList.contains('has-flexbox') ||
+                                  document.documentElement.classList.contains('no-flexbox');
+            addResult(
+                'CSS Feature Detection',
+                hasFlexboxClass,
+                hasFlexboxClass ? 'CSS features detected' : 'CSS feature detection failed'
+            );
+
+            // Test 8: Meta tag creation
+            const jsEnabledMeta = document.querySelector('meta[name="javascript-enabled"]');
+            addResult(
+                'Meta Tag Creation',
+                jsEnabledMeta && jsEnabledMeta.content === 'true',
+                jsEnabledMeta ? 'JavaScript enabled meta tag created' : 'Meta tag creation failed'
+            );
+
+            // Test 9: Page type detection
+            let pageType = 'unknown';
+            if (window.pageInitializer) {
+                pageType = window.pageInitializer.currentPage;
+            }
+            addResult(
+                'Page Type Detection',
+                pageType !== 'unknown',
+                `Page detected as: ${pageType}`
+            );
+
+            // Test 10: Enhancement level detection
+            let enhancementLevel = 'unknown';
+            if (window.progressiveEnhancement) {
+                enhancementLevel = window.progressiveEnhancement.enhancementLevel;
+            }
+            addResult(
+                'Enhancement Level',
+                enhancementLevel !== 'unknown',
+                `Enhancement level: ${enhancementLevel}`
+            );
+
+            // Summary
+            const passed = results.filter(r => r.passed).length;
+            const total = results.length;
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = `test-result ${passed === total ? 'pass' : 'fail'}`;
+            summaryDiv.innerHTML = `<strong>Summary: ${passed}/${total} tests passed</strong>`;
+            resultsContainer.appendChild(summaryDiv);
+
+            // Log results to console for debugging
+            console.log('Page Initialization Test Results:', results);
+            console.log('Detected Features:', window.detectedFeatures);
+            console.log('Page Initializer:', window.pageInitializer);
+            console.log('Progressive Enhancement:', window.progressiveEnhancement);
+        }
+
+        // Wait for all initialization to complete
+        document.addEventListener('DOMContentLoaded', () => {
+            // Give a small delay to ensure all scripts have run
+            setTimeout(runTests, 100);
+        });
+
+        // Also listen for the custom featuresDetected event
+        document.addEventListener('featuresDetected', (e) => {
+            console.log('Features detected event:', e.detail);
+        });
+    </script>
+</body>
+</html>

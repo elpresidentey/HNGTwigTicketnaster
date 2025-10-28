@@ -1,0 +1,81 @@
+{% extends "base.twig" %}
+
+{% block title %}Login - Ticket Management App{% endblock %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1 class="auth-title">Welcome Back</h1>
+            <p class="auth-subtitle">Sign in to your account to continue</p>
+        </div>
+
+        {# Error message display area #}
+        <div id="login-errors" class="error-container" role="alert" aria-live="polite" style="display: none;">
+            <div class="error-message" id="login-error-message"></div>
+        </div>
+
+        <form id="loginForm" class="auth-form" novalidate>
+            <div class="form-group">
+                <label for="login-username" class="form-label">
+                    Username or Email
+                    <span class="required-indicator" aria-label="required">*</span>
+                </label>
+                <input 
+                    type="text" 
+                    id="login-username" 
+                    name="username" 
+                    class="form-input" 
+                    placeholder="Enter your username or email"
+                    required 
+                    autocomplete="username"
+                    aria-describedby="username-error"
+                    aria-invalid="false"
+                >
+                <div id="username-error" class="field-error" role="alert" aria-live="polite"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="login-password" class="form-label">
+                    Password
+                    <span class="required-indicator" aria-label="required">*</span>
+                </label>
+                <input 
+                    type="password" 
+                    id="login-password" 
+                    name="password" 
+                    class="form-input" 
+                    placeholder="Enter your password"
+                    required 
+                    autocomplete="current-password"
+                    aria-describedby="password-error"
+                    aria-invalid="false"
+                    minlength="6"
+                >
+                <div id="password-error" class="field-error" role="alert" aria-live="polite"></div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-full" id="login-submit">
+                    <span class="btn-text">Sign In</span>
+                    <span class="btn-loading" style="display: none;">
+                        <span class="loading-spinner"></span>
+                        Signing in...
+                    </span>
+                </button>
+            </div>
+        </form>
+
+        <div class="auth-footer">
+            <p class="auth-link-text">
+                Don't have an account? 
+                <a href="/auth/signup" class="auth-link">Create one here</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{# Authentication functionality is now handled by app-integration.js #}

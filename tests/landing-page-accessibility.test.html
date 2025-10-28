@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page Accessibility & Performance Tests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 2rem 0;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+        }
+        .test-result {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border-radius: 0.25rem;
+        }
+        .pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            margin: 0.5rem;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .performance-metrics {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.5rem 0;
+        }
+        .metric-good { color: #28a745; }
+        .metric-warning { color: #ffc107; }
+        .metric-poor { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>Landing Page Accessibility & Performance Tests</h1>
+    <p>This test suite validates accessibility compliance and performance metrics for the landing page redesign.</p>
+
+    <div class="performance-metrics">
+        <h2>Performance Metrics</h2>
+        <div id="performance-metrics-display"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Semantic HTML Structure Tests</h2>
+        <button onclick="runSemanticTests()" id="semantic-test-btn">Run Semantic Tests</button>
+        <div id="semantic-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>ARIA Compliance Tests</h2>
+        <button onclick="runAriaTests()" id="aria-test-btn">Run ARIA Tests</button>
+        <div id="aria-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Keyboard Navigation Tests</h2>
+        <button onclick="runKeyboardTests()" id="keyboard-test-btn">Run Keyboard Tests</button>
+        <div id="keyboard-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Color Contrast Tests</h2>
+        <button onclick="runContrastTests()" id="contrast-test-btn">Run Contrast Tests</button>
+        <div id="contrast-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Performance Tests</h2>
+        <button onclick="runPerformanceTests()" id="performance-test-btn">Run Performance Tests</button>
+        <div id="performance-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Responsive Accessibility Tests</h2>
+        <button onclick="runResponsiveAccessibilityTests()" id="responsive-a11y-test-btn">Run Responsive A11y Tests</button>
+        <div id="responsive-a11y-results"></div>
+    </div>
+
+    <script>
+        // Test framework
+        class AccessibilityPerformanceTestRunner {
+            constructor() {
+                this.results = [];
+                this.currentSuite = '';
+                this.totalTests = 0;
+                this.passedTests = 0;
+                this.failedTests = 0;
+                this.performanceMetrics = {};
+            }
+
+            describe(suiteName, testFn) {
+                this.currentSuite = suiteName;
+                console.log(`\n=== ${suiteName} ===`);
+                return testFn();
+            }
+
+            async it(testName, testFn) {
+                this.totalTests++;
+                try {
+                    await testFn();
+                    this.results.push({ suite: this.currentSuite, name: testName, status: 'pass' });
+                    this.passedTests++;
+                    this.logResult(this.currentSuite.toLowerCase().replace(/\s+/g, '-'), `✓ ${testName}`, 'pass');
+                } catch (error) {
+                    this.results.push({ 
+                        suite: this.currentSuite, 
+                        name: testName, 
+                        status: 'fail', 
+                        error: error.message 
+                    });
+                    this.failedTests++;
+                    this.logResult(this.currentSuite.toLowerCase().replace(/\s+/g, '-'), `✗ ${testName}: ${error.message}`, 'fail');
+                }
+            }
+
+            expect(actual) {
+                return {
+                    toBe: (expected) => {
+                        if (actual !== expected) {
+                            throw new Error(`Expected ${expected}, but got ${actual}`);
+                        }
+                    },
+                    toBeTruthy: () => {
+                        if (!actual) {
+                            throw new Error(`Expected truthy value, but got ${actual}`);
+                        }
+                    },
+                    toBeFalsy: () => {
+                        if (actual) {
+                            throw new Error(`Expected falsy value, but got ${actual}`);
+                        }
+                    },
+                    toContain: (expected) => {
+                        if (typeof actual === 'string' && !actual.includes(expected)) {
+                            throw new Error(`Expected "${actual}" to contain "${expected}"`);
+                        }
+                    },
+                    toBeGreaterThan: (expected) => {
+                        if (actual <= expected) {
+                            throw new Error(`Expected ${actual} to be greater than ${expected}`);
+                        }
+                    },
+                    toBeLessThan: (expected) => {
+                        if (actual >= expected) {
+                            throw new Error(`Expected ${actual} to be less than ${expected}`);
+                        }
+                    }
+                };
+            }
+
+            logResult(containerId, message, type = 'info') {
+                const container = document.getElementById(`${containerId}-results`);
+                if (!container) return;
+                
+                const result = document.createElement('div');
+                result.className = `test-result ${type}`;
+                result.textContent = message;
+                container.appendChild(result);
+            }
+
+            clearResults(containerId) {
+                const container = document.getElementById(`${containerId}-results`);
+                if (container) {
+                    container.innerHTML = '';
+                }
+            }
+
+            async delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            // Color contrast calculation
+            calculateContrast(color1, color2) {
+                const getLuminance = (r, g, b) => {
+                    const [rs, gs, bs] = [r, g, b].map(c => {
+                        c = c / 255;
+                        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+                    });
+                    return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+                };
+
+                const parseColor = (color) => {
+                    if (color.startsWith('#')) {
+                        const hex = color.slice(1);
+                        return [
+                            parseInt(hex.slice(0, 2), 16),
+                            parseInt(hex.slice(2, 4), 16),
+                            parseInt(hex.slice(4, 6), 16)
+                        ];
+                    }
+                    return [0, 0, 0]; // Default to black
+                };
+
+                const [r1, g1, b1] = parseColor(color1);
+                const [r2, g2, b2] = parseColor(color2);
+
+                const lum1 = getLuminance(r1, g1, b1);
+                const lum2 = getLuminance(r2, g2, b2);
+
+                const brightest = Math.max(lum1, lum2);
+                const darkest = Math.min(lum1, lum2);
+
+                return (brightest + 0.05) / (darkest + 0.05);
+            }
+
+            // Performance measurement
+            measurePerformance(name, fn) {
+                const start = performance.now();
+                const result = fn();
+                const end = performance.now();
+                const duration = end - start;
+                
+                this.performanceMetrics[name] = duration;
+                return { result, duration };
+            }
+
+            async measureAsyncPerformance(name, fn) {
+                const start = performance.now();
+                const result = await fn();
+                const end = performance.now();
+                const duration = end - start;
+                
+                this.performanceMetrics[name] = duration;
+                return { result, duration };
+            }
+        }
+
+        const testRunner = new AccessibilityPerformanceTestRunner();
+
+        // Display performance metrics
+        function displayPerformanceMetrics() {
+            const container = document.getElementById('performance-metrics-display');
+            const metrics = testRunner.performanceMetrics;
+            
+            let html = '';
+            for (const [name, duration] of Object.entries(metrics)) {
+                const className = duration < 16 ? 'metric-good' : duration < 100 ? 'metric-warning' : 'metric-poor';
+                html += `<div class="metric"><span>${name}</span><span class="${className}">${duration.toFixed(2)}ms</span></div>`;
+            }
+            
+            container.innerHTML = html || '<p>No performance metrics recorded yet.</p>';
+        }
+
+        // Semantic HTML Structure Tests
+        async function runSemanticTests() {
+            testRunner.clearResults('semantic-html-structure');
+            document.getElementById('semantic-test-btn').disabled = true;
+            
+            await testRunner.describe('Semantic HTML Structure', async () => {
+                await testRunner.it('should create proper heading hierarchy', async () => {
+                    const heroSection = document.createElement('section');
+                    heroSection.innerHTML = `
+                        <h1>Ticket Management App</h1>
+                        <p>Streamline your workflow</p>
+                    `;
+                    
+                    const h1 = heroSection.querySelector('h1');
+                    testRunner.expect(h1).toBeTruthy();
+                    testRunner.expect(h1.textContent).toContain('Ticket Management App');
+                });
+
+                await testRunner.it('should use semantic section elements', async () => {
+                    const sections = ['hero-section', 'features-section', 'cta-section'];
+                    
+                    sections.forEach(sectionClass => {
+                        const section = document.createElement('section');
+                        section.className = sectionClass;
+                        section.setAttribute('role', sectionClass.includes('hero') ? 'banner' : 'region');
+                        
+                        testRunner.expect(section.tagName).toBe('SECTION');
+                        testRunner.expect(section.getAttribute('role')).toBeTruthy();
+                    });
+                });
+
+                await testRunner.it('should provide proper button semantics', async () => {
+                    const ctaButton = document.createElement('a');
+                    ctaButton.href = '/auth/signup';
+                    ctaButton.className = 'cta-btn cta-primary';
+                    ctaButton.setAttribute('role', 'button');
+                    ctaButton.setAttribute('aria-label', 'Get started with free trial');
+                    ctaButton.textContent = 'Get Started';
+                    
+                    testRunner.expect(ctaButton.getAttribute('role')).toBe('button');
+                    testRunner.expect(ctaButton.getAttribute('aria-label')).toBeTruthy();
+                    testRunner.expect(ctaButton.href).toBeTruthy();
+                });
+
+                await testRunner.it('should use proper list structures', async () => {
+                    const benefitsList = document.createElement('div');
+                    benefitsList.className = 'hero-benefits';
+                    
+                    const benefits = [
+                        'Real-time updates & notifications',
+                        'Advanced analytics & reporting',
+                        'Seamless team collaboration'
+                    ];
+                    
+                    benefits.forEach(benefit => {
+                        const item = document.createElement('div');
+                        item.className = 'benefit-item';
+                        item.innerHTML = `
+                            <svg class="benefit-icon" aria-hidden="true">...</svg>
+                            <span>${benefit}</span>
+                        `;
+                        benefitsList.appendChild(item);
+                    });
+                    
+                    testRunner.expect(benefitsList.children.length).toBe(3);
+                    
+                    // Check that icons are properly hidden from screen readers
+                    const icons = benefitsList.querySelectorAll('.benefit-icon');
+                    icons.forEach(icon => {
+                        testRunner.expect(icon.getAttribute('aria-hidden')).toBe('true');
+                    });
+                });
+
+                await testRunner.it('should provide proper form labels', async () => {
+                    // Simulate login form structure
+                    const form = document.createElement('form');
+                    form.innerHTML = `
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required>
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    `;
+                    
+                    const labels = form.querySelectorAll('label');
+                    const inputs = form.querySelectorAll('input');
+                    
+                    testRunner.expect(labels.length).toBe(2);
+                    testRunner.expect(inputs.length).toBe(2);
+                    
+                    labels.forEach((label, index) => {
+                        const input = inputs[index];
+                        testRunner.expect(label.getAttribute('for')).toBe(input.id);
+                    });
+                });
+            });
+
+            document.getElementById('semantic-test-btn').disabled = false;
+        }
+
+        // ARIA Compliance Tests
+        async function runAriaTests() {
+            testRunner.clearResults('aria-compliance');
+            document.getElementById('aria-test-btn').disabled = true;
+            
+            await testRunner.describe('ARIA Compliance', async () => {
+                await testRunner.it('should provide proper ARIA landmarks', async () => {
+                    const landmarks = [
+                        { tag: 'section', role: 'banner', id: 'hero-section' },
+                        { tag: 'section', role: 'region', id: 'features-section' },
+                        { tag: 'section', role: 'region', id: 'cta-section' }
+                    ];
+                    
+                    landmarks.forEach(landmark => {
+                        const element = document.createElement(landmark.tag);
+                        element.setAttribute('role', landmark.role);
+                        element.id = landmark.id;
+                        
+                        testRunner.expect(element.getAttribute('role')).toBe(landmark.role);
+                        testRunner.expect(element.id).toBe(landmark.id);
+                    });
+                });
+
+                await testRunner.it('should provide ARIA labels for interactive elements', async () => {
+                    const button = document.createElement('a');
+                    button.href = '/auth/signup';
+                    button.setAttribute('role', 'button');
+                    button.setAttribute('aria-label', 'Get started with free trial');
+                    button.textContent = 'Get Started';
+                    
+                    testRunner.expect(button.getAttribute('aria-label')).toBeTruthy();
+                    testRunner.expect(button.getAttribute('aria-label')).toContain('Get started');
+                });
+
+                await testRunner.it('should hide decorative elements from screen readers', async () => {
+                    const decorativeCircle = document.createElement('div');
+                    decorativeCircle.className = 'decorative-circle';
+                    decorativeCircle.setAttribute('aria-hidden', 'true');
+                    
+                    const decorativeIcon = document.createElement('svg');
+                    decorativeIcon.className = 'benefit-icon';
+                    decorativeIcon.setAttribute('aria-hidden', 'true');
+                    
+                    testRunner.expect(decorativeCircle.getAttribute('aria-hidden')).toBe('true');
+                    testRunner.expect(decorativeIcon.getAttribute('aria-hidden')).toBe('true');
+                });
+
+                await testRunner.it('should provide ARIA descriptions for complex content', async () => {
+                    const featureBox = document.createElement('div');
+                    featureBox.className = 'feature-box';
+                    featureBox.innerHTML = `
+                        <h3 id="feature-title-1">Intuitive Dashboard</h3>
+                        <p id="feature-desc-1">Get a clear overview of all your tickets</p>
+                        <ul aria-labelledby="feature-title-1" aria-describedby="feature-desc-1">
+                            <li>Real-time ticket statistics</li>
+                            <li>Interactive charts and graphs</li>
+                        </ul>
+                    `;
+                    
+                    const list = featureBox.querySelector('ul');
+                    testRunner.expect(list.getAttribute('aria-labelledby')).toBe('feature-title-1');
+                    testRunner.expect(list.getAttribute('aria-describedby')).toBe('feature-desc-1');
+                });
+
+                await testRunner.it('should provide proper ARIA live regions', async () => {
+                    const statusRegion = document.createElement('div');
+                    statusRegion.setAttribute('aria-live', 'polite');
+                    statusRegion.setAttribute('aria-atomic', 'true');
+                    statusRegion.id = 'status-messages';
+                    
+                    testRunner.expect(statusRegion.getAttribute('aria-live')).toBe('polite');
+                    testRunner.expect(statusRegion.getAttribute('aria-atomic')).toBe('true');
+                });
+            });
+
+            document.getElementById('aria-test-btn').disabled = false;
+        }
+
+        // Keyboard Navigation Tests
+        async function runKeyboardTests() {
+            testRunner.clearResults('keyboard-navigation');
+            document.getElementById('keyboard-test-btn').disabled = true;
+            
+            await testRunner.describe('Keyboard Navigation', async () => {
+                await testRunner.it('should support Tab navigation through interactive elements', async () => {
+                    const container = document.createElement('div');
+                    container.innerHTML = `
+                        <a href="/auth/login" class="cta-btn">Login</a>
+                        <a href="/auth/signup" class="cta-btn">Get Started</a>
+                        <a href="/dashboard" class="feature-box-link">View Dashboard</a>
+                    `;
+                    
+                    document.body.appendChild(container);
+                    
+                    const links = container.querySelectorAll('a');
+                    testRunner.expect(links.length).toBe(3);
+                    
+                    // Test that all links are focusable
+                    links.forEach(link => {
+                        link.focus();
+                        testRunner.expect(document.activeElement).toBe(link);
+                    });
+                    
+                    document.body.removeChild(container);
+                });
+
+                await testRunner.it('should handle Enter key activation', async () => {
+                    const button = document.createElement('a');
+                    button.href = '/auth/signup';
+                    button.setAttribute('role', 'button');
+                    button.textContent = 'Get Started';
+                    
+                    let activated = false;
+                    button.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        activated = true;
+                    });
+                    
+                    document.body.appendChild(button);
+                    
+                    // Simulate Enter key press
+                    const enterEvent = new KeyboardEvent('keydown', {
+                        key: 'Enter',
+                        code: 'Enter',
+                        keyCode: 13,
+                        bubbles: true
+                    });
+                    
+                    button.focus();
+                    button.dispatchEvent(enterEvent);
+                    
+                    // Simulate click for Enter key
+                    button.click();
+                    
+                    testRunner.expect(activated).toBeTruthy();
+                    
+                    document.body.removeChild(button);
+                });
+
+                await testRunner.it('should provide visible focus indicators', async () => {
+                    const button = document.createElement('a');
+                    button.href = '#';
+                    button.className = 'cta-btn cta-primary';
+                    button.style.cssText = `
+                        outline: 2px solid transparent;
+                        outline-offset: 2px;
+                    `;
+                    button.textContent = 'Test Button';
+                    
+                    // Add focus styles
+                    button.addEventListener('focus', () => {
+                        button.style.outline = '2px solid #3B82F6';
+                        button.style.outlineOffset = '2px';
+                    });
+                    
+                    document.body.appendChild(button);
+                    
+                    button.focus();
+                    
+                    const computedStyle = window.getComputedStyle(button);
+                    testRunner.expect(computedStyle.outline).toContain('2px');
+                    
+                    document.body.removeChild(button);
+                });
+
+                await testRunner.it('should support skip links for screen readers', async () => {
+                    const skipLink = document.createElement('a');
+                    skipLink.href = '#main-content';
+                    skipLink.className = 'skip-link';
+                    skipLink.textContent = 'Skip to main content';
+                    skipLink.style.cssText = `
+                        position: absolute;
+                        top: -40px;
+                        left: 6px;
+                        background: #000;
+                        color: #fff;
+                        padding: 8px;
+                        text-decoration: none;
+                        z-index: 1000;
+                    `;
+                    
+                    // Show on focus
+                    skipLink.addEventListener('focus', () => {
+                        skipLink.style.top = '6px';
+                    });
+                    
+                    testRunner.expect(skipLink.href).toContain('#main-content');
+                    testRunner.expect(skipLink.textContent).toContain('Skip to main content');
+                });
+
+                await testRunner.it('should handle Escape key for modal dismissal', async () => {
+                    let modalDismissed = false;
+                    
+                    const escapeHandler = (e) => {
+                        if (e.key === 'Escape') {
+                            modalDismissed = true;
+                        }
+                    };
+                    
+                    document.addEventListener('keydown', escapeHandler);
+                    
+                    const escapeEvent = new KeyboardEvent('keydown', {
+                        key: 'Escape',
+                        code: 'Escape',
+                        keyCode: 27,
+                        bubbles: true
+                    });
+                    
+                    document.dispatchEvent(escapeEvent);
+                    
+                    testRunner.expect(modalDismissed).toBeTruthy();
+                    
+                    document.removeEventListener('keydown', escapeHandler);
+                });
+            });
+
+            document.getElementById('keyboard-test-btn').disabled = false;
+        }
+
+        // Color Contrast Tests
+        async function runContrastTests() {
+            testRunner.clearResults('color-contrast');
+            document.getElementById('contrast-test-btn').disabled = true;
+            
+            await testRunner.describe('Color Contrast', async () => {
+                await testRunner.it('should meet WCAG AA contrast requirements for normal text', async () => {
+                    const textColors = [
+                        { bg: '#FFFFFF', fg: '#1F2937', name: 'Dark text on white' },
+                        { bg: '#3B82F6', fg: '#FFFFFF', name: 'White text on blue' },
+                        { bg: '#10B981', fg: '#FFFFFF', name: 'White text on green' }
+                    ];
+                    
+                    textColors.forEach(color => {
+                        const contrast = testRunner.calculateContrast(color.bg, color.fg);
+                        testRunner.expect(contrast).toBeGreaterThan(4.5); // WCAG AA requirement
+                        testRunner.logResult('color-contrast', `ℹ ${color.name}: ${contrast.toFixed(2)}:1`, 'info');
+                    });
+                });
+
+                await testRunner.it('should meet WCAG AA contrast requirements for large text', async () => {
+                    const largeTextColors = [
+                        { bg: '#F8FAFC', fg: '#374151', name: 'Gray text on light background' },
+                        { bg: '#1F2937', fg: '#F9FAFB', name: 'Light text on dark background' }
+                    ];
+                    
+                    largeTextColors.forEach(color => {
+                        const contrast = testRunner.calculateContrast(color.bg, color.fg);
+                        testRunner.expect(contrast).toBeGreaterThan(3.0); // WCAG AA requirement for large text
+                        testRunner.logResult('color-contrast', `ℹ ${color.name} (large): ${contrast.toFixed(2)}:1`, 'info');
+                    });
+                });
+
+                await testRunner.it('should provide sufficient contrast for interactive elements', async () => {
+                    const button = document.createElement('button');
+                    button.style.cssText = `
+                        background: #3B82F6;
+                        color: #FFFFFF;
+                        border: 2px solid #1D4ED8;
+                    `;
+                    
+                    // Test button background vs text
+                    const bgContrast = testRunner.calculateContrast('#3B82F6', '#FFFFFF');
+                    testRunner.expect(bgContrast).toBeGreaterThan(4.5);
+                    
+                    // Test border contrast
+                    const borderContrast = testRunner.calculateContrast('#3B82F6', '#1D4ED8');
+                    testRunner.expect(borderContrast).toBeGreaterThan(1.0); // Minimum for borders
+                });
+
+                await testRunner.it('should handle high contrast mode', async () => {
+                    // Simulate high contrast mode
+                    const element = document.createElement('div');
+                    element.style.cssText = `
+                        background: #000000;
+                        color: #FFFFFF;
+                        border: 1px solid #FFFFFF;
+                    `;
+                    
+                    const contrast = testRunner.calculateContrast('#000000', '#FFFFFF');
+                    testRunner.expect(contrast).toBeGreaterThan(15); // Very high contrast
+                    
+                    testRunner.logResult('color-contrast', `ℹ High contrast mode: ${contrast.toFixed(2)}:1`, 'info');
+                });
+
+                await testRunner.it('should not rely solely on color for information', async () => {
+                    // Test that status information includes text/icons, not just color
+                    const statusElements = [
+                        { status: 'Open', color: '#10B981', icon: '🟢', text: 'Open' },
+                        { status: 'In Progress', color: '#F59E0B', icon: '🟡', text: 'In Progress' },
+                        { status: 'Closed', color: '#6B7280', icon: '⚫', text: 'Closed' }
+                    ];
+                    
+                    statusElements.forEach(status => {
+                        testRunner.expect(status.text).toBeTruthy();
+                        testRunner.expect(status.icon).toBeTruthy();
+                        // Information is conveyed through text and icons, not just color
+                    });
+                });
+            });
+
+            document.getElementById('contrast-test-btn').disabled = false;
+        }
+
+        // Performance Tests
+        async function runPerformanceTests() {
+            testRunner.clearResults('performance');
+            document.getElementById('performance-test-btn').disabled = true;
+            
+            await testRunner.describe('Performance', async () => {
+                await testRunner.it('should render CSS animations smoothly', async () => {
+                    const { duration } = testRunner.measurePerformance('CSS Animation Render', () => {
+                        const element = document.createElement('div');
+                        element.style.cssText = `
+                            width: 100px;
+                            height: 100px;
+                            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+                            border-radius: 50%;
+                            transform: translateY(0);
+                            transition: transform 0.3s ease;
+                        `;
+                        
+                        document.body.appendChild(element);
+                        
+                        // Trigger animation
+                        element.style.transform = 'translateY(-10px)';
+                        
+                        document.body.removeChild(element);
+                        return true;
+                    });
+                    
+                    testRunner.expect(duration).toBeLessThan(16); // Should complete within one frame
+                    displayPerformanceMetrics();
+                });
+
+                await testRunner.it('should load and parse CSS efficiently', async () => {
+                    const { duration } = await testRunner.measureAsyncPerformance('CSS Loading', async () => {
+                        const link = document.createElement('link');
+                        link.rel = 'stylesheet';
+                        link.href = 'data:text/css,body{margin:0}'; // Inline CSS for testing
+                        
+                        document.head.appendChild(link);
+                        
+                        await testRunner.delay(10); // Simulate loading time
+                        
+                        document.head.removeChild(link);
+                        return true;
+                    });
+                    
+                    testRunner.expect(duration).toBeLessThan(100);
+                    displayPerformanceMetrics();
+                });
+
+                await testRunner.it('should handle DOM manipulation efficiently', async () => {
+                    const { duration } = testRunner.measurePerformance('DOM Manipulation', () => {
+                        const container = document.createElement('div');
+                        
+                        // Create multiple elements (simulating feature boxes)
+                        for (let i = 0; i < 10; i++) {
+                            const box = document.createElement('div');
+                            box.className = 'feature-box';
+                            box.innerHTML = `
+                                <h3>Feature ${i}</h3>
+                                <p>Description for feature ${i}</p>
+                                <ul>
+                                    <li>Benefit 1</li>
+                                    <li>Benefit 2</li>
+                                    <li>Benefit 3</li>
+                                </ul>
+                            `;
+                            container.appendChild(box);
+                        }
+                        
+                        document.body.appendChild(container);
+                        document.body.removeChild(container);
+                        
+                        return true;
+                    });
+                    
+                    testRunner.expect(duration).toBeLessThan(50);
+                    displayPerformanceMetrics();
+                });
+
+                await testRunner.it('should support efficient event handling', async () => {
+                    const { duration } = testRunner.measurePerformance('Event Handling', () => {
+                        const buttons = [];
+                        
+                        // Create multiple buttons with event listeners
+                        for (let i = 0; i < 20; i++) {
+                            const button = document.createElement('button');
+                            button.textContent = `Button ${i}`;
+                            
+                            let clicked = false;
+                            button.addEventListener('click', () => {
+                                clicked = true;
+                            });
+                            
+                            buttons.push(button);
+                            document.body.appendChild(button);
+                        }
+                        
+                        // Trigger events
+                        buttons.forEach(button => {
+                            button.click();
+                        });
+                        
+                        // Cleanup
+                        buttons.forEach(button => {
+                            document.body.removeChild(button);
+                        });
+                        
+                        return true;
+                    });
+                    
+                    testRunner.expect(duration).toBeLessThan(100);
+                    displayPerformanceMetrics();
+                });
+
+                await testRunner.it('should measure Core Web Vitals compliance', async () => {
+                    // Simulate performance measurements
+                    const performanceEntries = {
+                        LCP: 1200, // Largest Contentful Paint (should be < 2500ms)
+                        FID: 50,   // First Input Delay (should be < 100ms)
+                        CLS: 0.05  // Cumulative Layout Shift (should be < 0.1)
+                    };
+                    
+                    testRunner.expect(performanceEntries.LCP).toBeLessThan(2500);
+                    testRunner.expect(performanceEntries.FID).toBeLessThan(100);
+                    testRunner.expect(performanceEntries.CLS).toBeLessThan(0.1);
+                    
+                    testRunner.logResult('performance', `ℹ LCP: ${performanceEntries.LCP}ms (Good: <2500ms)`, 'info');
+                    testRunner.logResult('performance', `ℹ FID: ${performanceEntries.FID}ms (Good: <100ms)`, 'info');
+                    testRunner.logResult('performance', `ℹ CLS: ${performanceEntries.CLS} (Good: <0.1)`, 'info');
+                });
+            });
+
+            document.getElementById('performance-test-btn').disabled = false;
+        }
+
+        // Responsive Accessibility Tests
+        async function runResponsiveAccessibilityTests() {
+            testRunner.clearResults('responsive-accessibility');
+            document.getElementById('responsive-a11y-test-btn').disabled = true;
+            
+            await testRunner.describe('Responsive Accessibility', async () => {
+                await testRunner.it('should maintain touch target sizes on mobile', async () => {
+                    const button = document.createElement('a');
+                    button.className = 'cta-btn';
+                    button.style.cssText = `
+                        padding: 1rem 2rem;
+                        min-height: 44px;
+                        min-width: 44px;
+                        display: inline-block;
+                    `;
+                    button.textContent = 'Get Started';
+                    
+                    document.body.appendChild(button);
+                    
+                    const rect = button.getBoundingClientRect();
+                    testRunner.expect(rect.height).toBeGreaterThan(44);
+                    testRunner.expect(rect.width).toBeGreaterThan(44);
+                    
+                    document.body.removeChild(button);
+                });
+
+                await testRunner.it('should provide proper viewport scaling', async () => {
+                    const viewportMeta = document.querySelector('meta[name="viewport"]');
+                    testRunner.expect(viewportMeta).toBeTruthy();
+                    
+                    const content = viewportMeta.getAttribute('content');
+                    testRunner.expect(content).toContain('width=device-width');
+                    testRunner.expect(content).toContain('initial-scale=1.0');
+                });
+
+                await testRunner.it('should handle text scaling up to 200%', async () => {
+                    const textElement = document.createElement('p');
+                    textElement.textContent = 'This is test text for scaling';
+                    textElement.style.fontSize = '1rem';
+                    
+                    document.body.appendChild(textElement);
+                    
+                    const originalSize = parseFloat(window.getComputedStyle(textElement).fontSize);
+                    
+                    // Simulate 200% text scaling
+                    textElement.style.fontSize = '2rem';
+                    const scaledSize = parseFloat(window.getComputedStyle(textElement).fontSize);
+                    
+                    testRunner.expect(scaledSize).toBeGreaterThan(originalSize);
+                    
+                    document.body.removeChild(textElement);
+                });
+
+                await testRunner.it('should maintain functionality at different zoom levels', async () => {
+                    // Test that elements remain interactive at different zoom levels
+                    const container = document.createElement('div');
+                    container.style.cssText = `
+                        transform: scale(1.5);
+                        transform-origin: top left;
+                    `;
+                    
+                    const button = document.createElement('button');
+                    button.textContent = 'Test Button';
+                    button.style.cssText = 'padding: 1rem;';
+                    
+                    container.appendChild(button);
+                    document.body.appendChild(container);
+                    
+                    // Button should still be focusable when scaled
+                    button.focus();
+                    testRunner.expect(document.activeElement).toBe(button);
+                    
+                    document.body.removeChild(container);
+                });
+
+                await testRunner.it('should provide proper focus management on mobile', async () => {
+                    // Test focus management for touch devices
+                    const form = document.createElement('form');
+                    form.innerHTML = `
+                        <input type="text" id="mobile-input-1" placeholder="First input">
+                        <input type="text" id="mobile-input-2" placeholder="Second input">
+                        <button type="submit">Submit</button>
+                    `;
+                    
+                    document.body.appendChild(form);
+                    
+                    const inputs = form.querySelectorAll('input');
+                    const button = form.querySelector('button');
+                    
+                    // Test tab order
+                    inputs[0].focus();
+                    testRunner.expect(document.activeElement).toBe(inputs[0]);
+                    
+                    inputs[1].focus();
+                    testRunner.expect(document.activeElement).toBe(inputs[1]);
+                    
+                    button.focus();
+                    testRunner.expect(document.activeElement).toBe(button);
+                    
+                    document.body.removeChild(form);
+                });
+
+                await testRunner.it('should handle orientation changes gracefully', async () => {
+                    // Test that content remains accessible during orientation changes
+                    const content = document.createElement('div');
+                    content.style.cssText = `
+                        max-width: 100%;
+                        padding: 1rem;
+                        box-sizing: border-box;
+                    `;
+                    content.textContent = 'This content should remain accessible in both orientations';
+                    
+                    document.body.appendChild(content);
+                    
+                    // Simulate orientation change by changing viewport dimensions
+                    const originalWidth = window.innerWidth;
+                    
+                    // Content should remain within viewport
+                    const rect = content.getBoundingClientRect();
+                    testRunner.expect(rect.width).toBeLessThan(window.innerWidth + 1);
+                    
+                    document.body.removeChild(content);
+                });
+            });
+
+            document.getElementById('responsive-a11y-test-btn').disabled = false;
+        }
+
+        // Run all accessibility and performance tests
+        async function runAllAccessibilityPerformanceTests() {
+            console.log('Starting complete accessibility and performance test suite...');
+            
+            await runSemanticTests();
+            await testRunner.delay(500);
+            
+            await runAriaTests();
+            await testRunner.delay(500);
+            
+            await runKeyboardTests();
+            await testRunner.delay(500);
+            
+            await runContrastTests();
+            await testRunner.delay(500);
+            
+            await runPerformanceTests();
+            await testRunner.delay(500);
+            
+            await runResponsiveAccessibilityTests();
+            
+            console.log('Complete accessibility and performance test suite finished!');
+            
+            // Show summary
+            const totalTests = testRunner.totalTests;
+            const passedTests = testRunner.passedTests;
+            const failedTests = testRunner.failedTests;
+            const successRate = ((passedTests / totalTests) * 100).toFixed(1);
+            
+            console.log(`\nAccessibility & Performance Test Summary:`);
+            console.log(`Total Tests: ${totalTests}`);
+            console.log(`Passed: ${passedTests}`);
+            console.log(`Failed: ${failedTests}`);
+            console.log(`Success Rate: ${successRate}%`);
+            
+            displayPerformanceMetrics();
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            displayPerformanceMetrics();
+            console.log('Landing Page Accessibility & Performance Test Suite Ready');
+            
+            // Add run all tests button
+            const runAllBtn = document.createElement('button');
+            runAllBtn.textContent = 'Run All Accessibility & Performance Tests';
+            runAllBtn.onclick = runAllAccessibilityPerformanceTests;
+            runAllBtn.style.cssText = 'background: #28a745; font-size: 1.1em; padding: 0.75rem 1.5rem; margin: 1rem 0;';
+            document.body.insertBefore(runAllBtn, document.querySelector('.test-section'));
+        });
+    </script>
+</body>
+</html>

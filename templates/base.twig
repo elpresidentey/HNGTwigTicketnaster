@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block description %}A modern ticket management system for tracking and organizing your tasks{% endblock %}">
+    <meta name="author" content="Ticket Management App">
+    <meta name="robots" content="index, follow">
+    
+    {# Accessibility meta tags #}
+    <meta name="theme-color" content="#3B82F6">
+    <meta name="color-scheme" content="light">
+    
+    {# Open Graph meta tags for social sharing #}
+    <meta property="og:title" content="{% block og_title %}{{ block('title') }}{% endblock %}">
+    <meta property="og:description" content="{{ block('description') }}">
+    <meta property="og:type" content="website">
+    
+    <title>{% block title %}Ticket Management App{% endblock %}</title>
+    
+    {# Preload critical assets #}
+    <link rel="preload" href="/assets/css/styles.css" as="style">
+    
+    {# Stylesheets #}
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <link rel="stylesheet" href="/assets/css/loading-states.css">
+    <link rel="stylesheet" href="/assets/css/error-boundaries.css">
+    <link rel="stylesheet" href="/assets/css/no-js-fallback.css">
+    <link rel="stylesheet" href="/assets/css/integration-enhancements.css">
+    <link rel="stylesheet" href="/assets/css/footer-unified.css">
+    
+    {# Immediate feature detection - must run before body content #}
+    <script src="/assets/js/feature-detect.js"></script>
+    
+    {# Additional head content #}
+    {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    {# Skip to main content for accessibility #}
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    {# No JavaScript fallback message #}
+    <noscript>
+        <div class="no-js-message" style="background: #fef3c7; border: 1px solid #f59e0b; padding: 1rem; margin: 1rem; border-radius: 0.5rem; color: #92400e;">
+            <strong>JavaScript is disabled:</strong> This application works best with JavaScript enabled. 
+            Some features may be limited, but core functionality remains available.
+        </div>
+    </noscript>
+    
+    {# Navigation header #}
+    <header class="site-header" role="banner">
+        {% block navigation %}
+            {% include 'components/navigation.twig' %}
+        {% endblock %}
+    </header>
+    
+    {# Main content area #}
+    <main id="main-content" class="main-content" role="main">
+        {# Page-specific content #}
+        {% block content %}{% endblock %}
+    </main>
+    
+    {# Site footer #}
+    <footer class="site-footer" role="contentinfo">
+        {% block footer %}
+            <div class="footer-content">
+                {# Company Information Section #}
+                <div class="footer-company">
+                    <div class="footer-logo">
+                        <div class="footer-logo-icon">🎫</div>
+                        <span>Ticket Management App</span>
+                    </div>
+                    <p class="footer-tagline">
+                        Streamline your workflow with our intelligent ticket management platform. 
+                        Resolve issues faster, collaborate better, and keep your team productive.
+                    </p>
+                </div>
+                
+                {# Product Navigation #}
+                <div class="footer-nav-section">
+                    <h3 class="footer-nav-title">Product</h3>
+                    <nav class="footer-nav" aria-label="Product navigation">
+                        <a href="/dashboard" class="footer-link">Dashboard</a>
+                        <a href="/tickets" class="footer-link">Tickets</a>
+                        <a href="/analytics" class="footer-link">Analytics</a>
+                        <a href="/integrations" class="footer-link">Integrations</a>
+                        <a href="/api" class="footer-link">API</a>
+                    </nav>
+                </div>
+                
+                {# Company Navigation #}
+                <div class="footer-nav-section">
+                    <h3 class="footer-nav-title">Company</h3>
+                    <nav class="footer-nav" aria-label="Company navigation">
+                        <a href="/about" class="footer-link">About Us</a>
+                        <a href="/careers" class="footer-link">Careers</a>
+                        <a href="/blog" class="footer-link">Blog</a>
+                        <a href="/press" class="footer-link">Press</a>
+                        <a href="/contact" class="footer-link">Contact</a>
+                    </nav>
+                </div>
+                
+                {# Support Navigation #}
+                <div class="footer-nav-section">
+                    <h3 class="footer-nav-title">Support</h3>
+                    <nav class="footer-nav" aria-label="Support navigation">
+                        <a href="/help" class="footer-link">Help Center</a>
+                        <a href="/docs" class="footer-link">Documentation</a>
+                        <a href="/community" class="footer-link">Community</a>
+                        <a href="/status" class="footer-link">System Status</a>
+                        <a href="/support" class="footer-link">Contact Support</a>
+                    </nav>
+                </div>
+                
+                {# Newsletter Signup #}
+                <div class="footer-newsletter">
+                    <h3 class="footer-newsletter-title">Stay Updated</h3>
+                    <p class="footer-newsletter-description">
+                        Get the latest updates, tips, and news delivered to your inbox.
+                    </p>
+                    <form class="footer-newsletter-form" action="/newsletter" method="post">
+                        <input 
+                            type="email" 
+                            class="footer-newsletter-input" 
+                            placeholder="Enter your email"
+                            name="email"
+                            required
+                            aria-label="Email address for newsletter"
+                        >
+                        <button type="submit" class="footer-newsletter-button">
+                            Subscribe
+                        </button>
+                    </form>
+                </div>
+                
+                {# Footer Bottom Section #}
+                <div class="footer-bottom">
+                    <p class="footer-copyright">
+                        &copy; {{ "now"|date("Y") }} Ticket Management App. All rights reserved.
+                    </p>
+                    <nav class="footer-legal-links" aria-label="Legal navigation">
+                        <a href="/privacy" class="footer-legal-link">Privacy Policy</a>
+                        <a href="/terms" class="footer-legal-link">Terms of Service</a>
+                        <a href="/cookies" class="footer-legal-link">Cookie Policy</a>
+                        <a href="/security" class="footer-legal-link">Security</a>
+                    </nav>
+                </div>
+            </div>
+        {% endblock %}
+    </footer>
+    
+    {# Toast notification container - DISABLED to prevent popups #}
+    {# <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div> #}
+    
+    {# JavaScript files #}
+    {% block scripts %}
+        <script src="/assets/js/auth.js?v=2"></script>
+        <script src="/assets/js/app-integration.js?v=2"></script>
+    {% endblock %}
+    
+    {# Additional scripts that should load last #}
+    {% block scripts_footer %}{% endblock %}
+</body>
+</html>

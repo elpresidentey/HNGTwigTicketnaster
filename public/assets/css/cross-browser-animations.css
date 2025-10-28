@@ -1,0 +1,482 @@
+/* ===== CROSS-BROWSER ANIMATION COMPATIBILITY ===== */
+
+/* ===== WEBKIT/SAFARI OPTIMIZATIONS ===== */
+
+/* Safari-specific GPU acceleration */
+@supports (-webkit-appearance: none) {
+  .feature-box,
+  .cta-btn,
+  .decorative-circle {
+    -webkit-transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    -webkit-perspective: 1000px;
+  }
+  
+  .feature-box:hover {
+    -webkit-transform: translate3d(0, -8px, 0) scale3d(1.02, 1.02, 1);
+  }
+  
+  .cta-primary:hover {
+    -webkit-transform: translate3d(0, -3px, 0) scale3d(1.02, 1.02, 1);
+  }
+  
+  .cta-secondary:hover {
+    -webkit-transform: translate3d(0, -3px, 0) scale3d(1.02, 1.02, 1);
+  }
+  
+  /* Safari backdrop-filter support */
+  .decorative-circle {
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  .hero-badge {
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  .cta-secondary {
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  /* Safari animation optimizations */
+  .decorative-circle {
+    -webkit-animation: optimizedFloat 6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .hero-badge {
+    -webkit-animation: optimizedFadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
+  }
+}
+
+/* ===== FIREFOX OPTIMIZATIONS ===== */
+
+@-moz-document url-prefix() {
+  /* Firefox-specific fixes */
+  .decorative-circle {
+    background: rgba(255, 255, 255, 0.2); /* Stronger fallback for Firefox */
+    animation-timing-function: ease-in-out; /* Smoother in Firefox */
+  }
+  
+  .feature-box,
+  .cta-btn {
+    transform: translateZ(0); /* Force GPU acceleration in Firefox */
+  }
+  
+  /* Firefox doesn't support backdrop-filter well, use stronger backgrounds */
+  .hero-badge {
+    background: rgba(255, 255, 255, 0.15);
+  }
+  
+  .cta-secondary {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Firefox clip-path optimization */
+  .hero-section {
+    clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+  }
+}
+
+/* ===== CHROME/EDGE OPTIMIZATIONS ===== */
+
+@supports (backdrop-filter: blur(10px)) {
+  /* Chrome/Edge have good backdrop-filter support */
+  .decorative-circle {
+    backdrop-filter: blur(10px);
+    will-change: transform, opacity;
+  }
+  
+  .hero-badge {
+    backdrop-filter: blur(10px);
+  }
+  
+  .cta-secondary {
+    backdrop-filter: blur(10px);
+  }
+  
+  .footer-social-link {
+    backdrop-filter: blur(10px);
+  }
+  
+  /* Chrome/Edge animation optimizations */
+  .feature-box:hover,
+  .cta-btn:hover {
+    will-change: transform, box-shadow;
+  }
+}
+
+/* ===== INTERNET EXPLORER 11 FALLBACKS ===== */
+
+@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+  /* IE11 doesn't support many modern CSS features */
+  .hero-section {
+    background: #667eea; /* Solid color fallback */
+    clip-path: none; /* Remove clip-path */
+  }
+  
+  .hero-section::before,
+  .hero-section::after {
+    display: none; /* Remove pseudo-elements */
+  }
+  
+  .decorative-circle {
+    background: rgba(255, 255, 255, 0.3);
+    animation: none; /* Disable animations in IE11 */
+    opacity: 0.1;
+  }
+  
+  .feature-boxes-grid {
+    display: block; /* Fallback to block layout */
+  }
+  
+  .feature-box {
+    margin-bottom: 2rem;
+    width: 100%;
+    float: none;
+  }
+  
+  .hero-actions {
+    text-align: center;
+  }
+  
+  .cta-btn {
+    display: inline-block;
+    margin: 0.5rem;
+  }
+  
+  .footer-content {
+    display: block; /* Fallback layout */
+  }
+  
+  .footer-section {
+    margin-bottom: 2rem;
+  }
+  
+  /* IE11 hover effects (simplified) */
+  .feature-box:hover {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    transform: none; /* No transforms in IE11 */
+  }
+  
+  .cta-btn:hover {
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    transform: none;
+  }
+}
+
+/* ===== EDGE LEGACY SUPPORT ===== */
+
+@supports (-ms-ime-align: auto) {
+  /* Edge Legacy (EdgeHTML) specific fixes */
+  .decorative-circle {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  .feature-box {
+    transform: translateZ(0); /* Force GPU acceleration */
+  }
+  
+  .hero-section {
+    clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+  }
+}
+
+/* ===== MOBILE BROWSER OPTIMIZATIONS ===== */
+
+/* iOS Safari optimizations */
+@supports (-webkit-touch-callout: none) {
+  .feature-box,
+  .cta-btn,
+  .decorative-circle {
+    -webkit-transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+  }
+  
+  /* Reduce animation complexity on iOS */
+  .decorative-circle {
+    animation-duration: 8s;
+  }
+  
+  /* iOS Safari clip-path support */
+  .hero-section {
+    -webkit-clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+  }
+  
+  /* iOS Safari backdrop-filter */
+  .decorative-circle,
+  .hero-badge,
+  .cta-secondary {
+    -webkit-backdrop-filter: blur(10px);
+  }
+}
+
+/* Android Chrome optimizations */
+@media screen and (max-width: 767px) and (-webkit-min-device-pixel-ratio: 1) {
+  /* Android-specific optimizations */
+  .decorative-circle {
+    animation-duration: 10s; /* Slower on Android for better performance */
+  }
+  
+  .feature-box:hover {
+    transform: translateY(-4px); /* Simpler hover effect */
+  }
+  
+  .cta-btn:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* ===== ANIMATION KEYFRAMES WITH BROWSER PREFIXES ===== */
+
+/* Webkit keyframes */
+@-webkit-keyframes optimizedFloat {
+  0%, 100% {
+    -webkit-transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 0.1;
+  }
+  25% {
+    -webkit-transform: translate3d(0, -20px, 0) rotate(90deg);
+    opacity: 0.15;
+  }
+  50% {
+    -webkit-transform: translate3d(0, -10px, 0) rotate(180deg);
+    opacity: 0.2;
+  }
+  75% {
+    -webkit-transform: translate3d(0, -30px, 0) rotate(270deg);
+    opacity: 0.15;
+  }
+}
+
+@-webkit-keyframes optimizedFadeInUp {
+  from {
+    opacity: 0;
+    -webkit-transform: translate3d(0, 30px, 0);
+  }
+  to {
+    opacity: 1;
+    -webkit-transform: translate3d(0, 0, 0);
+  }
+}
+
+@-webkit-keyframes optimizedPulse {
+  0%, 100% {
+    -webkit-transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+    opacity: 0.1;
+  }
+  50% {
+    -webkit-transform: translate3d(0, 0, 0) scale3d(1.1, 1.1, 1);
+    opacity: 0.2;
+  }
+}
+
+/* Mozilla keyframes */
+@-moz-keyframes optimizedFloat {
+  0%, 100% {
+    -moz-transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 0.1;
+  }
+  25% {
+    -moz-transform: translate3d(0, -20px, 0) rotate(90deg);
+    opacity: 0.15;
+  }
+  50% {
+    -moz-transform: translate3d(0, -10px, 0) rotate(180deg);
+    opacity: 0.2;
+  }
+  75% {
+    -moz-transform: translate3d(0, -30px, 0) rotate(270deg);
+    opacity: 0.15;
+  }
+}
+
+@-moz-keyframes optimizedFadeInUp {
+  from {
+    opacity: 0;
+    -moz-transform: translate3d(0, 30px, 0);
+  }
+  to {
+    opacity: 1;
+    -moz-transform: translate3d(0, 0, 0);
+  }
+}
+
+/* ===== FEATURE DETECTION AND PROGRESSIVE ENHANCEMENT ===== */
+
+/* Base styles for all browsers */
+.animation-base {
+  transition: all 0.3s ease;
+}
+
+/* Enhanced styles for modern browsers */
+@supports (transform: translate3d(0, 0, 0)) {
+  .animation-enhanced {
+    transform: translateZ(0);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Grid support detection */
+@supports not (display: grid) {
+  .feature-boxes-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+  
+  .feature-box {
+    flex: 1 1 300px;
+    min-width: 300px;
+  }
+}
+
+/* Flexbox support detection */
+@supports not (display: flex) {
+  .hero-actions {
+    text-align: center;
+  }
+  
+  .hero-actions .cta-btn {
+    display: inline-block;
+    margin: 0.5rem;
+  }
+  
+  .footer-content {
+    display: block;
+  }
+  
+  .footer-section {
+    margin-bottom: 2rem;
+  }
+}
+
+/* CSS Custom Properties support detection */
+@supports not (color: var(--test)) {
+  .cta-primary {
+    background: #3B82F6;
+    color: #FFFFFF;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+  }
+  
+  .feature-box {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* ===== PERFORMANCE OPTIMIZATIONS BY BROWSER ===== */
+
+/* Chrome performance optimizations */
+@media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: 0.001dpcm) {
+  .decorative-circle {
+    will-change: transform, opacity;
+  }
+  
+  .feature-box:hover,
+  .cta-btn:hover {
+    will-change: transform, box-shadow;
+  }
+}
+
+/* Firefox performance optimizations */
+@-moz-document url-prefix() {
+  .decorative-circle {
+    transform: translateZ(0); /* Force GPU layer */
+  }
+  
+  .feature-box,
+  .cta-btn {
+    transform: translateZ(0);
+  }
+}
+
+/* Safari performance optimizations */
+@supports (-webkit-appearance: none) and (not (color: -webkit-link)) {
+  /* Safari 14+ */
+  .decorative-circle {
+    -webkit-transform: translateZ(0);
+    will-change: transform, opacity;
+  }
+}
+
+/* ===== TOUCH DEVICE OPTIMIZATIONS ===== */
+
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover effects on touch devices */
+  .feature-box:hover,
+  .cta-btn:hover,
+  .footer-social-link:hover {
+    transform: none;
+    box-shadow: inherit;
+  }
+  
+  /* Add active states for touch feedback */
+  .feature-box:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+  
+  .cta-btn:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+  }
+  
+  /* Larger touch targets */
+  .cta-btn {
+    min-height: 48px;
+    padding: 1rem 1.5rem;
+  }
+  
+  .footer-social-link {
+    min-width: 48px;
+    min-height: 48px;
+  }
+}
+
+/* ===== HIGH DPI DISPLAY OPTIMIZATIONS ===== */
+
+@media (min-resolution: 2dppx) {
+  /* Reduce animation complexity on high-DPI displays */
+  .decorative-circle {
+    animation-duration: 8s;
+  }
+  
+  .feature-box:hover {
+    transform: translate3d(0, -6px, 0) scale3d(1.01, 1.01, 1);
+  }
+  
+  .cta-btn:hover {
+    transform: translate3d(0, -2px, 0) scale3d(1.01, 1.01, 1);
+  }
+}
+
+/* ===== PRINT OPTIMIZATIONS ===== */
+
+@media print {
+  /* Remove all animations for print */
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+  
+  .decorative-circle {
+    display: none !important;
+  }
+  
+  .hero-section {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    clip-path: none !important;
+  }
+  
+  .feature-box {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

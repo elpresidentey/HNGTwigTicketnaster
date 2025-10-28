@@ -1,0 +1,499 @@
+/**
+ * Integration Enhancements CSS
+ * Additional styles for the integrated application components
+ */
+
+/* Ripple Animation */
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* Loading States */
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Form Loading States */
+.form-loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.form-loading .loading-spinner {
+    margin-right: 0.5rem;
+}
+
+/* Enhanced Button States */
+.btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Modal Enhancements */
+.modal {
+    backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
+}
+
+.modal.show {
+    display: flex !important;
+}
+
+.modal-content {
+    animation: modalSlideIn 0.3s ease-out;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Toast Enhancements */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    pointer-events: none;
+}
+
+.toast {
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-left: 4px solid;
+    padding: 1rem;
+    min-width: 300px;
+    max-width: 400px;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    pointer-events: auto;
+}
+
+.toast.toast-show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.toast.toast-hide {
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+.toast-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.toast-icon {
+    font-size: 1.25rem;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.toast-message {
+    flex: 1;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+}
+
+.toast-close:hover {
+    opacity: 1;
+}
+
+/* Toast Types */
+.toast-success {
+    border-left-color: #10B981;
+    background: #F0FDF4;
+    color: #065F46;
+}
+
+.toast-error {
+    border-left-color: #EF4444;
+    background: #FEF2F2;
+    color: #991B1B;
+}
+
+.toast-warning {
+    border-left-color: #F59E0B;
+    background: #FFFBEB;
+    color: #92400E;
+}
+
+.toast-info {
+    border-left-color: #3B82F6;
+    background: #EFF6FF;
+    color: #1E40AF;
+}
+
+/* Form Validation Enhancements */
+.field-error {
+    border-color: #EF4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.error-message {
+    color: #EF4444;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: none;
+}
+
+.error-message.show {
+    display: block;
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Character Counter Enhancements */
+.char-limit-warning {
+    color: #F59E0B;
+    font-weight: 500;
+}
+
+.char-limit-exceeded {
+    color: #EF4444;
+    font-weight: 600;
+}
+
+/* Password Toggle Enhancements */
+.password-toggle {
+    transition: color 0.2s ease;
+}
+
+.password-toggle:hover {
+    color: #374151;
+}
+
+/* Stat Card Enhancements */
+.stat-card.has-tickets {
+    border-left-width: 6px;
+    transform: translateY(-2px);
+}
+
+.stat-card.has-tickets .stat-number {
+    font-weight: 800;
+    color: #1F2937;
+}
+
+.stat-card.has-tickets .stat-icon {
+    transform: scale(1.1);
+}
+
+.clickable-stat .stat-arrow {
+    transition: all 0.2s ease;
+}
+
+.clickable-stat:hover .stat-arrow {
+    opacity: 1;
+    transform: translateX(4px);
+}
+
+/* Ticket Card Enhancements */
+.ticket-card {
+    transition: all 0.2s ease;
+}
+
+.ticket-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.ticket-card .edit-ticket-btn,
+.ticket-card .delete-ticket-btn {
+    opacity: 0.6;
+    transition: all 0.2s ease;
+}
+
+.ticket-card:hover .edit-ticket-btn,
+.ticket-card:hover .delete-ticket-btn {
+    opacity: 1;
+}
+
+.ticket-card .edit-ticket-btn:hover {
+    color: #3B82F6;
+    transform: scale(1.1);
+}
+
+.ticket-card .delete-ticket-btn:hover {
+    color: #EF4444;
+    transform: scale(1.1);
+}
+
+/* Filter Button Enhancements */
+.filter-btn {
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.filter-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.filter-btn.active {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+/* Status Indicator Enhancements */
+.status-indicator {
+    transition: all 0.2s ease;
+}
+
+.ticket-status-badge:hover .status-indicator {
+    transform: scale(1.2);
+}
+
+/* Navigation Enhancements */
+.site-header {
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+/* Breadcrumb Enhancements */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #6B7280;
+    margin-bottom: 1rem;
+}
+
+.breadcrumb a {
+    color: #3B82F6;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb a:hover {
+    color: #1D4ED8;
+}
+
+.breadcrumb-separator {
+    color: #9CA3AF;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(2px);
+}
+
+.loading-overlay .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border-width: 4px;
+}
+
+/* Accessibility Enhancements */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: #000;
+    color: #fff;
+    padding: 8px;
+    text-decoration: none;
+    border-radius: 0 0 4px 4px;
+    z-index: 10000;
+    transition: top 0.3s;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* Focus Enhancements */
+.btn:focus,
+input:focus,
+textarea:focus,
+select:focus {
+    outline: 2px solid #3B82F6;
+    outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .toast {
+        border: 2px solid currentColor;
+    }
+    
+    .btn {
+        border: 2px solid currentColor;
+    }
+    
+    .ticket-card {
+        border: 2px solid #374151;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .toast {
+        transform: none;
+        opacity: 1;
+    }
+    
+    .modal-content {
+        animation: none;
+    }
+}
+
+/* Dark Mode Support (if implemented) */
+@media (prefers-color-scheme: dark) {
+    .toast {
+        background: #1F2937;
+        color: #F9FAFB;
+        border-left-color: currentColor;
+    }
+    
+    .toast-success {
+        background: #064E3B;
+        color: #A7F3D0;
+    }
+    
+    .toast-error {
+        background: #7F1D1D;
+        color: #FECACA;
+    }
+    
+    .toast-warning {
+        background: #78350F;
+        color: #FDE68A;
+    }
+    
+    .toast-info {
+        background: #1E3A8A;
+        color: #DBEAFE;
+    }
+}
+
+/* Mobile Responsive Enhancements */
+@media (max-width: 640px) {
+    .toast-container {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+    }
+    
+    .toast {
+        min-width: auto;
+        max-width: none;
+    }
+    
+    .modal-content {
+        margin: 1rem;
+        max-height: calc(100vh - 2rem);
+    }
+    
+    .ticket-card {
+        padding: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1.5rem;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .toast-container,
+    .modal,
+    .loading-overlay {
+        display: none !important;
+    }
+    
+    .btn {
+        border: 1px solid #000;
+        background: transparent;
+        color: #000;
+    }
+    
+    .ticket-card {
+        border: 1px solid #000;
+        break-inside: avoid;
+        margin-bottom: 1rem;
+    }
+}

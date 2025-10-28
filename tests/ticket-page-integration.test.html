@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Page Integration Tests</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .test-suite { margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; background: white; border-radius: 4px; }
+        .test-case { margin: 8px 0; padding: 10px; border-left: 3px solid #ccc; background: #fafafa; }
+        .test-pass { border-left-color: #4CAF50; background-color: #f1f8e9; }
+        .test-fail { border-left-color: #f44336; background-color: #ffebee; }
+        .test-summary { font-weight: bold; margin-top: 20px; padding: 15px; background: white; border-radius: 4px; }
+        .pass { color: #4CAF50; }
+        .fail { color: #f44336; }
+        pre { background: #f5f5f5; padding: 10px; margin: 5px 0; overflow-x: auto; font-size: 12px; }
+        h1 { color: #333; }
+        h3 { color: #555; margin-top: 0; }
+    </style>
+</head>
+<body>
+    <h1>Ticket Page Integration Tests</h1>
+    <div id="test-results"></div>
+    <div id="test-summary"></div>
+
+    <!-- Load dependencies -->
+    <script src="../public/assets/js/auth.js"></script>
+    <script src="../public/assets/js/ticket-statistics.js"></script>
+    <script src="../public/assets/js/ticket-page-controller.js"></script>
+    
+    <script>
+        // Simple test framework
+        class TestRunner {
+            constructor() {
+                this.results = [];
+                this.currentSuite = '';
+            }
+
+            describe(suiteName, testFn) {
+                this.currentSuite = suiteName;
+                console.log(`\n=== ${suiteName} ===`);
+                testFn();
+            }
+
+            it(testName, testFn) {
+                try {
+                    testFn();
+                    this.results.push({ suite: this.currentSuite, name: testName, status: 'pass' });
+                    console.log(`✓ ${testName}`);
+                } catch (error) {
+                    this.results.push({ 
+                        suite: this.currentSuite, 
+                        name: testName, 
+                        status: 'fail', 
+                        error: error.message,
+                        stack: error.stack
+                    });
+                    console.error(`✗ ${testName}: ${error.message}`);
+                }
+            }
+
+            expect(actual) {
+                return {
+                    toBe: (expected) => {
+                        if (actual !== expected) {
+                            throw new Error(`Expected ${expected}, but got ${actual}`);
+                        }
+                    },
+                    toEqual: (expected) => {
+                        if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+                            throw new Error(`Expected ${JSON.stringify(expected)}, but got ${JSON.stringify(actual)}`);
+                        }
+                    },
+                    toBeTruthy: () => {
+                        if (!actual) {
+                            throw new Error(`Expected truthy value, but got ${actual}`);
+                        }
+                    },
+                    toBeFalsy: () => {
+                        if (actual) {
+                            throw new Error(`Expected falsy value, but got ${actual}`);
+                        }
+                    },
+                    toContain: (expected) => {
+                        if (typeof actual === 'string') {
+                            if (!actual.includes(expected)) {
+                                throw new Error(`Expected "${actual}" to contain "${expected}"`);
+                            }
+                        } else if (Array.isArray(actual)) {
+                            if (!actual.includes(expected)) {
+                                throw new Error(`Expected array to contain ${expected}`);
+                            }
+                        } else {
+                            throw new Error(`toContain() requires string or array, got ${typeof actual}`);
+                        }
+                    },
+                    toHaveBeenCalled: () => {
+                        if (!actual || !actual.called) {
+                            throw new Error(`Expected function to have been called`);
+                        }
+                    }
+                };
+            }
+
+            renderResults() {
+                const resultsDiv = document.getElementById('test-results');
+                const summaryDiv = document.getElementById('test-summary');
+                
+                let html = '';
+                let currentSuite = '';
+                
+                this.results.forEach(result => {
+                    if (result.suite !== currentSuite) {
+                        if (currentSuite !== '') html += '</div>';
+                        html += `<div class="test-suite"><h3>${result.suite}</h3>`;
+                        currentSuite = result.suite;
+                    }
+                    
+                    const statusClass = result.status === 'pass' ? 'test-pass' : 'test-fail';
+                    const statusIcon = result.status === 'pass' ? '✓' : '✗';
+                    
+                    html += `<div class="test-case ${statusClass}">
+                        ${statusIcon} ${result.name}
+                        ${result.error ? `<pre>Error: ${result.error}</pre>` : ''}
+                    </div>`;
+                });
+                
+                if (currentSuite !== '') html += '</div>';
+                resultsDiv.innerHTML = html;
+                
+                // Summary
+                const passed = this.results.filter(r => r.status === 'pass').length;
+                const failed = this.results.filter(r => r.status === 'fail').length;
+                const total = this.results.length;
+                
+                summaryDiv.innerHTML = `
+                    <div class="test-summary">
+                        <strong>Test Results:</strong> ${total} tests | 
+                        <span class="pass">✓ Passed: ${passed}</span> | 
+                        <span class="fail">✗ Failed: ${failed}</span>
+                    </div>
+                `;
+            }
+        }
+
+        // Mock localStorage
+        class MockLocalStorage {
+            constructor() {
+                this.store = {};
+            }
+
+            getItem(key) {
+                return this.store[key] || null;
+            }
+
+            setItem(key, value) {
+                this.store[key] = String(value);
+            }
+
+            removeItem(key) {
+                delete this.store[key];
+            }
+
+            clear() {
+                this.store = {};
+            }
+        }
+
+        // Initialize test runner
+        const testRunner = new TestRunner();
+        const { describe, it, expect } = testRunner;
+
+        // Store original objects
+        const originalLocalStorage = window.localStorage;
+        const originalLocation = window.location;
+        const originalGetElementById = document.getElementById.bind(document);
+
+        // Helper to create sample tickets
+        function createSampleTickets(counts = { open: 2, inProgress: 1, closed: 1 }) {
+            const tickets = [];
+            let id = 1;
+            
+            ['open', 'inProgress', 'closed'].forEach(statusKey => {
+                const statusMap = {
+                    open: 'Open',
+                    inProgress: 'In Progress',
+                    closed: 'Closed'
+                };
+                const status = statusMap[statusKey];
+                const count = counts[statusKey];
+                
+                for (let i = 0; i < count; i++) {
+                    tickets.push({
+                        id: `ticket_${id++}`,
+                        title: `${status} Ticket ${i + 1}`,
+                        description: 'Test ticket',
+                        status: status,
+                        createdAt: Date.now() - (i * 1000),
+                        updatedAt: Date.now() - (i * 1000),
+                        userId: 'user123'
+                    });
+                }
+            });
+            
+            return tickets;
+        }
+
+        // Helper to create mock session
+        function createMockSession(username = 'TestUser') {
+            return {
+                token: 'mock-token-123',
+                user: {
+                    id: 'user123',
+                    username: username,
+                    email: 'test@example.com'
+                },
+                expiresAt: Date.now() + 3600000 // 1 hour from now
+            };
+        }
+
+        // Run tests
+        describe('TicketPageController - Page Initialization', () => {
+            let controller;
+            let mockLocalStorage;
+            let mockElements;
+            let redirectCalled;
+
+            function setup() {
+                mockLocalStorage = new MockLocalStorage();
+                window.localStorage = mockLocalStorage;
+                
+                // Mock DOM elements
+                mockElements = {
+                    username: { textContent: '' },
+                    totalCount: { textContent: '' },
+                    openCount: { textContent: '' },
+                    inProgressCount: { textContent: '' },
+                    closedCount: { textContent: '' },
+                    createTicketBtn: { 
+                        addEventListener: function() {},
+                        click: function() {}
+                    },
+                    viewAllTicketsBtn: { 
+                        addEventListener: function() {},
+                        click: function() {}
+                    }
+                };
+
+                document.getElementById = (id) => mockElements[id] || null;
+                
+                // Mock location
+                redirectCalled = false;
+                delete window.location;
+                window.location = { 
+                    href: '',
+                    get href() { return this._href || ''; },
+                    set href(value) { 
+                        this._href = value;
+                        redirectCalled = true;
+                    }
+                };
+                
+                controller = new TicketPageController();
+            }
+
+            function teardown() {
+                window.localStorage = originalLocalStorage;
+                document.getElementById = originalGetElementById;
+                window.location = originalLocation;
+            }
+
+            it('should redirect to login when not authenticated', () => {
+                setup();
+                
+                // No session in localStorage
+                controller.init();
+
+                expect(redirectCalled).toBeTruthy();
+                expect(window.location.href).toContain('/auth/login');
+                
+                teardown();
+            });
+
+            it('should initialize successfully when authenticated', () => {
+                setup();
+                
+                // Set up authenticated session
+                const session = createMockSession('DemoUser');
+                mockLocalStorage.setItem('ticketapp_session', JSON.stringify(session));
+                
+                // Set up tickets
+                const tickets = createSampleTickets({ open: 2, inProgress: 1, closed: 1 });
+                mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                controller.init();
+
+                expect(redirectCalled).toBeFalsy();
+                
+                teardown();
+            });
+
+            it('should display username from session on initialization', () => {
+                setup();
+                
+                // Set up authenticated session
+                const session = createMockSession('JohnDoe');
+                mockLocalStorage.setItem('ticketapp_session', JSON.stringify(session));
+                
+                // Set up tickets
+                const tickets = createSampleTickets({ open: 2, inProgress: 1, closed: 1 });
+                mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                controller.init();
+
+                expect(mockElements.username.textContent).toBe('JohnDoe');
+                
+                teardown();
+            });
+
+            it('should calculate and display statistics on initialization', (done) => {
+                setup();
+                
+                // Set up authenticated session
+                const session = createMockSession('TestUser');
+                mockLocalStorage.setItem('ticketapp_session', JSON.stringify(session));
+                
+                // Set up tickets
+                const tickets = createSampleTickets({ open: 3, inProgress: 2, closed: 1 });
+                mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                controller.init();
+
+                // Wait for async statistics update
+                setTimeout(() => {
+                    expect(mockElements.totalCount.textContent).toBe(6);
+                    expect(mockElements.openCount.textContent).toBe(3);
+                    expect(mockElements.inProgressCount.textContent).toBe(2);
+                    expect(mockElements.closedCount.textContent).toBe(1);
+                    
+                    teardown();
+                    done();
+                }, 100);
+            });
+
+            it('should attach event listeners to action buttons', () => {
+                setup();
+                
+                // Set up authenticated session
+                const session = createMockSession('TestUser');
+                mockLocalStorage.setItem('ticketapp_session', JSON.stringify(session));
+                
+                let createBtnListenerAdded = false;
+                let viewBtnListenerAdded = false;
+                
+                mockElements.createTicketBtn.addEventListener = () => { createBtnListenerAdded = true; };
+                mockElements.viewAllTicketsBtn.addEventListener = () => { viewBtnListenerAdded = true; };
+
+                controller.init();
+
+                expect(createBtnListenerAdded).toBeTruthy();
+                expect(viewBtnListenerAdded).toBeTruthy();
+                
+                teardown();
+            });
+        });
+
+        describe('TicketPageController - Username Display', () => {
+            let controller;
+            let mockLocalStorage;
+            let mockElements;
+
+            function setup() {
+                mockLocalStorage = new MockLocalStorage();
+                window.localStorage = mockLocalStorage;
+                
+                mockElements = {
+                    username: { textContent: '' }
+                };
+
+                document.getElementById = (id) => mockElements[id] || null;
+                
+                controller = new TicketPageController();
+            }
+
+            function teardown() {
+                window.localStorage = originalLocalStorage;
+                document.getElementById = originalGetElementById;
+            }
+
+            it('should display username from valid session', () => {
+                setup();
+                
+                const session = createMockSession('AliceSmith');
+                mockLocalStorage.setItem('ticketapp_session', JSON.stringify(session));
+
+                controller.displayUsername();
+
+                expect(mockElements.username.textContent).toBe('AliceSmith');
+                
+                teardown();
+            });
+
+            it('should display fallback username when session is missing', () => {
+                setup();
+
+                controller.displayUsername();
+
+                expect(mockElements.username.textContent).toBe('User');
+                
+                teardown();
+            });
+
+            it('should display fallback username when session is malformed', () => {
+                setup();
+                
+                mockLocalStorage.setItem('ticketapp_session', '{invalid json}');
+
+                controller.displayUsername();
+
+                expect(mockElements.username.textContent).toBe('User');
+                
+                teardown();
+            });
+
+            it('should display fallback username when username is missing from session', () => {
+                setup();
+                
+                const session = {
+                    token: 'mock-token',
+                    user: {
+                        id: 'user123',
+                        email: 'test@example.com'
+                        // username missing
+                    },
+                    expiresAt: Date.now() + 3600000
+                };
+                mockLocalStorage.setItem('ticketapp_session', JSON.stringify(session));
+
+                controller.displayUsername();
+
+                expect(mockElements.username.textContent).toBe('User');
+                
+                teardown();
+            });
+
+            it('should handle missing username element gracefully', () => {
+                setup();
+                
+                mockElements = {}; // No username element
+                document.getElementById = (id) => mockElements[id] || null;
+                
+                const session = createMockSession('TestUser');
+                mockLocalStorage.setItem('ticketapp_session', JSON.stringify(session));
+
+                // Should not throw error
+                controller.displayUsername();
+
+                expect(true).toBeTruthy();
+                
+                teardown();
+            });
+        });
+
+        describe('TicketPageController - Navigation', () => {
+            let controller;
+            let mockLocalStorage;
+
+            function setup() {
+                mockLocalStorage = new MockLocalStorage();
+                window.localStorage = mockLocalStorage;
+                
+                // Mock location
+                delete window.location;
+                window.location = { 
+                    href: '',
+                    get href() { return this._href || ''; },
+                    set href(value) { this._href = value; }
+                };
+                
+                controller = new TicketPageController();
+            }
+
+            function teardown() {
+                window.localStorage = originalLocalStorage;
+                window.location = originalLocation;
+            }
+
+            it('should navigate to ticket list when View All Tickets is clicked', () => {
+                setup();
+
+                controller.handleViewAllTickets();
+
+                expect(window.location.href).toContain('/tickets/list');
+                
+                teardown();
+            });
+
+            it('should handle Create New Ticket button click', () => {
+                setup();
+                
+                // Mock TicketManager not being available
+                window.TicketManager = undefined;
+
+                controller.handleCreateTicket();
+
+                // Should redirect to tickets page when TicketManager is not available
+                expect(window.location.href).toContain('/tickets');
+                
+                teardown();
+            });
+        });
+
+        describe('TicketPageController - Statistics Refresh', () => {
+            let controller;
+            let mockLocalStorage;
+            let mockElements;
+
+            function setup() {
+                mockLocalStorage = new MockLocalStorage();
+                window.localStorage = mockLocalStorage;
+                
+                mockElements = {
+                    totalCount: { textContent: '' },
+                    openCount: { textContent: '' },
+                    inProgressCount: { textContent: '' },
+                    closedCount: { textContent: '' }
+                };
+
+                document.getElementById = (id) => mockElements[id] || null;
+                
+                controller = new TicketPageController();
+            }
+
+            function teardown() {
+                window.localStorage = originalLocalStorage;
+                document.getElementById = originalGetElementById;
+            }
+
+            it('should refresh statistics when called', (done) => {
+                setup();
+                
+                const tickets = createSampleTickets({ open: 5, inProgress: 3, closed: 2 });
+                mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                controller.refreshStatistics(true);
+
+                setTimeout(() => {
+                    expect(mockElements.totalCount.textContent).toBe(10);
+                    expect(mockElements.openCount.textContent).toBe(5);
+                    expect(mockElements.inProgressCount.textContent).toBe(3);
+                    expect(mockElements.closedCount.textContent).toBe(2);
+                    
+                    teardown();
+                    done();
+                }, 100);
+            });
+
+            it('should update statistics after ticket creation', (done) => {
+                setup();
+                
+                // Initial tickets
+                const tickets = createSampleTickets({ open: 2, inProgress: 1, closed: 1 });
+                mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                controller.refreshStatistics(true);
+
+                setTimeout(() => {
+                    // Add a new ticket
+                    tickets.push({
+                        id: 'ticket_new',
+                        title: 'New Ticket',
+                        description: 'Test',
+                        status: 'Open',
+                        createdAt: Date.now(),
+                        updatedAt: Date.now(),
+                        userId: 'user123'
+                    });
+                    mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                    // Refresh statistics
+                    controller.refreshStatisticsPublic(true);
+
+                    setTimeout(() => {
+                        expect(mockElements.totalCount.textContent).toBe(5);
+                        expect(mockElements.openCount.textContent).toBe(3);
+                        
+                        teardown();
+                        done();
+                    }, 100);
+                }, 100);
+            });
+
+            it('should update statistics after ticket status change', (done) => {
+                setup();
+                
+                // Initial tickets
+                const tickets = createSampleTickets({ open: 3, inProgress: 1, closed: 1 });
+                mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                controller.refreshStatistics(true);
+
+                setTimeout(() => {
+                    // Change a ticket status from Open to Closed
+                    tickets[0].status = 'Closed';
+                    mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                    // Refresh statistics
+                    controller.refreshStatisticsPublic(true);
+
+                    setTimeout(() => {
+                        expect(mockElements.openCount.textContent).toBe(2);
+                        expect(mockElements.closedCount.textContent).toBe(2);
+                        
+                        teardown();
+                        done();
+                    }, 100);
+                }, 100);
+            });
+
+            it('should update statistics after ticket deletion', (done) => {
+                setup();
+                
+                // Initial tickets
+                let tickets = createSampleTickets({ open: 3, inProgress: 2, closed: 1 });
+                mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                controller.refreshStatistics(true);
+
+                setTimeout(() => {
+                    // Delete a ticket
+                    tickets = tickets.slice(1);
+                    mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                    // Refresh statistics
+                    controller.refreshStatisticsPublic(true);
+
+                    setTimeout(() => {
+                        expect(mockElements.totalCount.textContent).toBe(5);
+                        
+                        teardown();
+                        done();
+                    }, 100);
+                }, 100);
+            });
+
+            it('should handle empty tickets after deletion', (done) => {
+                setup();
+                
+                // Initial tickets
+                const tickets = createSampleTickets({ open: 1, inProgress: 0, closed: 0 });
+                mockLocalStorage.setItem('tickets', JSON.stringify(tickets));
+
+                controller.refreshStatistics(true);
+
+                setTimeout(() => {
+                    // Delete all tickets
+                    mockLocalStorage.setItem('tickets', JSON.stringify([]));
+
+                    // Refresh statistics
+                    controller.refreshStatisticsPublic(true);
+
+                    setTimeout(() => {
+                        expect(mockElements.totalCount.textContent).toBe(0);
+                        expect(mockElements.openCount.textContent).toBe(0);
+                        expect(mockElements.inProgressCount.textContent).toBe(0);
+                        expect(mockElements.closedCount.textContent).toBe(0);
+                        
+                        teardown();
+                        done();
+                    }, 100);
+                }, 100);
+            });
+        });
+
+        describe('TicketPageController - Event Listeners', () => {
+            let controller;
+            let mockLocalStorage;
+
+            function setup() {
+                mockLocalStorage = new MockLocalStorage();
+                window.localStorage = mockLocalStorage;
+                
+                controller = new TicketPageController();
+            }
+
+            function teardown() {
+                window.localStorage = originalLocalStorage;
+            }
+
+            it('should listen for ticketCreated event', (done) => {
+                setup();
+                
+                let refreshCalled = false;
+                controller.refreshStatisticsPublic = () => { refreshCalled = true; };
+
+                // Set up event listener
+                controller.setupTicketChangeListeners();
+
+                // Dispatch event
+                window.dispatchEvent(new Event('ticketCreated'));
+
+                setTimeout(() => {
+                    expect(refreshCalled).toBeTruthy();
+                    
+                    teardown();
+                    done();
+                }, 50);
+            });
+
+            it('should listen for ticketUpdated event', (done) => {
+                setup();
+                
+                let refreshCalled = false;
+                controller.refreshStatisticsPublic = () => { refreshCalled = true; };
+
+                // Set up event listener
+                controller.setupTicketChangeListeners();
+
+                // Dispatch event
+                window.dispatchEvent(new Event('ticketUpdated'));
+
+                setTimeout(() => {
+                    expect(refreshCalled).toBeTruthy();
+                    
+                    teardown();
+                    done();
+                }, 50);
+            });
+
+            it('should listen for ticketDeleted event', (done) => {
+                setup();
+                
+                let refreshCalled = false;
+                controller.refreshStatisticsPublic = () => { refreshCalled = true; };
+
+                // Set up event listener
+                controller.setupTicketChangeListeners();
+
+                // Dispatch event
+                window.dispatchEvent(new Event('ticketDeleted'));
+
+                setTimeout(() => {
+                    expect(refreshCalled).toBeTruthy();
+                    
+                    teardown();
+                    done();
+                }, 50);
+            });
+
+            it('should listen for storage changes', (done) => {
+                setup();
+                
+                let refreshCalled = false;
+                controller.refreshStatisticsPublic = () => { refreshCalled = true; };
+
+                // Set up event listener
+                controller.setupTicketChangeListeners();
+
+                // Dispatch storage event
+                const storageEvent = new StorageEvent('storage', { key: 'tickets' });
+                window.dispatchEvent(storageEvent);
+
+                setTimeout(() => {
+                    expect(refreshCalled).toBeTruthy();
+                    
+                    teardown();
+                    done();
+                }, 50);
+            });
+        });
+
+        // Restore original objects
+        window.localStorage = originalLocalStorage;
+        document.getElementById = originalGetElementById;
+        window.location = originalLocation;
+
+        // Render test results
+        testRunner.renderResults();
+    </script>
+</body>
+</html>
+

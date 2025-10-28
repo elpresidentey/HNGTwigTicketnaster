@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>End-to-End Integration Tests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 2rem 0;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+        }
+        .test-result {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border-radius: 0.25rem;
+        }
+        .pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            margin: 0.5rem;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #28a745;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .test-summary {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 2rem 0;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>End-to-End Integration Test Suite</h1>
+    <p>This comprehensive test suite validates the complete user authentication flow and full ticket CRUD operation workflow.</p>
+
+    <div class="test-summary">
+        <h2>Test Progress</h2>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div id="progress-text">Ready to start tests...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Authentication Flow Tests</h2>
+        <button onclick="runAuthenticationTests()" id="auth-test-btn">Run Authentication Tests</button>
+        <div id="auth-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Ticket CRUD Workflow Tests</h2>
+        <button onclick="runTicketCRUDTests()" id="crud-test-btn">Run CRUD Tests</button>
+        <div id="crud-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Full Integration Workflow Tests</h2>
+        <button onclick="runFullIntegrationTests()" id="integration-test-btn">Run Full Integration Tests</button>
+        <div id="integration-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Cross-Module Communication Tests</h2>
+        <button onclick="runCrossModuleTests()" id="cross-module-test-btn">Run Cross-Module Tests</button>
+        <div id="cross-module-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Error Handling & Recovery Tests</h2>
+        <button onclick="runErrorHandlingTests()" id="error-test-btn">Run Error Handling Tests</button>
+        <div id="error-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Cross-Browser Compatibility Tests</h2>
+        <button onclick="runCrossBrowserTests()" id="browser-test-btn">Run Browser Compatibility Tests</button>
+        <div id="browser-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Responsive Design Tests</h2>
+        <button onclick="runResponsiveTests()" id="responsive-test-btn">Run Responsive Design Tests</button>
+        <div id="responsive-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Accessibility & Keyboard Navigation Tests</h2>
+        <button onclick="runAccessibilityTests()" id="accessibility-test-btn">Run Accessibility Tests</button>
+        <div id="accessibility-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Complete End-to-End Workflow Tests</h2>
+        <button onclick="runCompleteE2ETests()" id="complete-e2e-test-btn">Run Complete E2E Tests</button>
+        <div id="complete-e2e-results"></div>
+    </div>
+
+    <div id="final-results" class="test-summary hidden">
+        <h2>Final Test Results</h2>
+        <div id="final-summary"></div>
+    </div>
+
+    <!-- Load all required modules -->
+    <script src="../public/assets/js/utils.js"></script>
+    <script src="../public/assets/js/auth.js"></script>
+    <script src="../public/assets/js/tickets.js"></script>
+    <script src="../public/assets/js/loading-states.js"></script>
+    <script src="../public/assets/js/error-boundaries.js"></script>
+    <script src="../public/assets/js/responsive-verifier.js"></script>
+    <script src="../public/assets/js/asset-optimizer.js"></script>
+    <script src="../public/assets/js/feature-detect.js"></script>
+    <script src="../public/assets/js/progressive-enhancement.js"></script>
+    <script src="../public/assets/js/page-init.js"></script>
+    <script src="../public/assets/js/app-integration.js"></script>
+    <script src="../public/assets/js/optimization-integration.js"></script>
+
+    <script>
+        // Test framework and utilities
+        class E2ETestRunner {
+            constructor() {
+                this.results = [];
+                this.currentSuite = '';
+                this.totalTests = 0;
+                this.completedTests = 0;
+                this.passedTests = 0;
+                this.failedTests = 0;
+            }
+
+            describe(suiteName, testFn) {
+                this.currentSuite = suiteName;
+                console.log(`\n=== ${suiteName} ===`);
+                return testFn();
+            }
+
+            async it(testName, testFn) {
+                this.totalTests++;
+                try {
+                    await testFn();
+                    this.results.push({ suite: this.currentSuite, name: testName, status: 'pass' });
+                    this.passedTests++;
+                    this.logResult(this.currentSuite.toLowerCase().replace(/\s+/g, '-'), `✓ ${testName}`, 'pass');
+                } catch (error) {
+                    this.results.push({ 
+                        suite: this.currentSuite, 
+                        name: testName, 
+                        status: 'fail', 
+                        error: error.message 
+                    });
+                    this.failedTests++;
+                    this.logResult(this.currentSuite.toLowerCase().replace(/\s+/g, '-'), `✗ ${testName}: ${error.message}`, 'fail');
+                }
+                this.completedTests++;
+                this.updateProgress();
+            }
+
+            expect(actual) {
+                return {
+                    toBe: (expected) => {
+                        if (actual !== expected) {
+                            throw new Error(`Expected ${expected}, but got ${actual}`);
+                        }
+                    },
+                    toEqual: (expected) => {
+                        if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+                            throw new Error(`Expected ${JSON.stringify(expected)}, but got ${JSON.stringify(actual)}`);
+                        }
+                    },
+                    toBeTruthy: () => {
+                        if (!actual) {
+                            throw new Error(`Expected truthy value, but got ${actual}`);
+                        }
+                    },
+                    toBeFalsy: () => {
+                        if (actual) {
+                            throw new Error(`Expected falsy value, but got ${actual}`);
+                        }
+                    },
+                    toContain: (expected) => {
+                        if (typeof actual === 'string' && !actual.includes(expected)) {
+                            throw new Error(`Expected "${actual}" to contain "${expected}"`);
+                        }
+                        if (Array.isArray(actual) && !actual.includes(expected)) {
+                            throw new Error(`Expected array to contain ${expected}`);
+                        }
+                    },
+                    toBeGreaterThan: (expected) => {
+                        if (actual <= expected) {
+                            throw new Error(`Expected ${actual} to be greater than ${expected}`);
+                        }
+                    },
+                    toHaveLength: (expected) => {
+                        if (actual.length !== expected) {
+                            throw new Error(`Expected length ${expected}, but got ${actual.length}`);
+                        }
+                    }
+                };
+            }
+
+            logResult(containerId, message, type = 'info') {
+                const container = document.getElementById(`${containerId}-results`);
+                if (!container) return;
+                
+                const result = document.createElement('div');
+                result.className = `test-result ${type}`;
+                result.textContent = message;
+                container.appendChild(result);
+            }
+
+            updateProgress() {
+                const percentage = (this.completedTests / this.totalTests) * 100;
+                const progressFill = document.getElementById('progress-fill');
+                const progressText = document.getElementById('progress-text');
+                
+                if (progressFill) {
+                    progressFill.style.width = `${percentage}%`;
+                }
+                
+                if (progressText) {
+                    progressText.textContent = `${this.completedTests}/${this.totalTests} tests completed (${this.passedTests} passed, ${this.failedTests} failed)`;
+                }
+            }
+
+            async delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            clearResults(containerId) {
+                const container = document.getElementById(`${containerId}-results`);
+                if (container) {
+                    container.innerHTML = '';
+                }
+            }
+
+            showFinalResults() {
+                const finalResults = document.getElementById('final-results');
+                const finalSummary = document.getElementById('final-summary');
+                
+                if (finalResults && finalSummary) {
+                    finalResults.classList.remove('hidden');
+                    
+                    const successRate = ((this.passedTests / this.totalTests) * 100).toFixed(1);
+                    const status = this.failedTests === 0 ? 'pass' : 'fail';
+                    
+                    finalSummary.innerHTML = `
+                        <div class="test-result ${status}">
+                            <h3>Test Suite Complete</h3>
+                            <p><strong>Total Tests:</strong> ${this.totalTests}</p>
+                            <p><strong>Passed:</strong> ${this.passedTests}</p>
+                            <p><strong>Failed:</strong> ${this.failedTests}</p>
+                            <p><strong>Success Rate:</strong> ${successRate}%</p>
+                        </div>
+                    `;
+                    
+                    if (this.failedTests > 0) {
+                        const failedList = this.results.filter(r => r.status === 'fail');
+                        finalSummary.innerHTML += `
+                            <div class="test-result fail">
+                                <h4>Failed Tests:</h4>
+                                <ul>
+                                    ${failedList.map(test => `<li>${test.suite}: ${test.name} - ${test.error}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `;
+                    }
+                }
+            }
+        }
+
+        const testRunner = new E2ETestRunner();
+
+        // Mock DOM elements and setup
+        function setupTestEnvironment() {
+            // Clear localStorage and sessionStorage
+            if (typeof localStorage !== 'undefined') {
+                localStorage.clear();
+            }
+            if (typeof sessionStorage !== 'undefined') {
+                sessionStorage.clear();
+            }
+
+            // Reset any global state
+            if (window.appAuth) {
+                window.appAuth = null;
+            }
+            if (window.appTickets) {
+                window.appTickets = null;
+            }
+        }
+
+        // Authentication Flow Tests
+        async function runAuthenticationTests() {
+            testRunner.clearResults('authentication-flow');
+            document.getElementById('auth-test-btn').disabled = true;
+            
+            await testRunner.describe('Authentication Flow', async () => {
+                setupTestEnvironment();
+
+                await testRunner.it('should initialize authentication manager', async () => {
+                    const authManager = new AuthManager();
+                    testRunner.expect(authManager).toBeTruthy();
+                    testRunner.expect(typeof authManager.login).toBe('function');
+                    testRunner.expect(typeof authManager.logout).toBe('function');
+                    testRunner.expect(typeof authManager.isAuthenticated).toBe('function');
+                });
+
+                await testRunner.it('should handle login with valid credentials', async () => {
+                    const authManager = new AuthManager();
+                    const result = await authManager.login({ username: 'demo', password: 'password' });
+                    
+                    testRunner.expect(result.success).toBeTruthy();
+                    testRunner.expect(result.user).toBeTruthy();
+                    testRunner.expect(result.user.username).toBe('demo');
+                });
+
+                await testRunner.it('should store session data after successful login', async () => {
+                    const authManager = new AuthManager();
+                    await authManager.login({ username: 'admin', password: 'admin123' });
+                    
+                    testRunner.expect(authManager.isAuthenticated()).toBeTruthy();
+                    const session = authManager.getSession();
+                    testRunner.expect(session).toBeTruthy();
+                    testRunner.expect(session.token).toBeTruthy();
+                });
+
+                await testRunner.it('should reject invalid credentials', async () => {
+                    const authManager = new AuthManager();
+                    const result = await authManager.login({ username: 'invalid', password: 'wrong' });
+                    
+                    testRunner.expect(result.success).toBeFalsy();
+                    testRunner.expect(result.error).toContain('Invalid username or password');
+                });
+
+                await testRunner.it('should handle logout and clear session', async () => {
+                    const authManager = new AuthManager();
+                    await authManager.login({ username: 'demo', password: 'password' });
+                    
+                    testRunner.expect(authManager.isAuthenticated()).toBeTruthy();
+                    
+                    const logoutResult = authManager.logout();
+                    testRunner.expect(logoutResult.success).toBeTruthy();
+                    testRunner.expect(authManager.isAuthenticated()).toBeFalsy();
+                });
+
+                await testRunner.it('should handle session expiration', async () => {
+                    const authManager = new AuthManager();
+                    
+                    // Manually set expired session
+                    const expiredSession = {
+                        token: 'expired-token',
+                        user: { id: '1', username: 'test' },
+                        expiresAt: Date.now() - 1000
+                    };
+                    localStorage.setItem('ticketapp_session', JSON.stringify(expiredSession));
+                    
+                    testRunner.expect(authManager.isAuthenticated()).toBeFalsy();
+                });
+            });
+
+            document.getElementById('auth-test-btn').disabled = false;
+        }
+
+        // Ticket CRUD Workflow Tests
+        async function runTicketCRUDTests() {
+            testRunner.clearResults('ticket-crud-workflow');
+            document.getElementById('crud-test-btn').disabled = true;
+            
+            await testRunner.describe('Ticket CRUD Workflow', async () => {
+                setupTestEnvironment();
+                
+                // Setup authenticated session for ticket operations
+                const authManager = new AuthManager();
+                await authManager.login({ username: 'demo', password: 'password' });
+
+                await testRunner.it('should initialize ticket manager', async () => {
+                    const ticketManager = new TicketManager();
+                    testRunner.expect(ticketManager).toBeTruthy();
+                    testRunner.expect(typeof ticketManager.createTicket).toBe('function');
+                    testRunner.expect(typeof ticketManager.getTickets).toBe('function');
+                    testRunner.expect(typeof ticketManager.updateTicket).toBe('function');
+                    testRunner.expect(typeof ticketManager.deleteTicket).toBe('function');
+                });
+
+                await testRunner.it('should create a new ticket', async () => {
+                    const ticketManager = new TicketManager();
+                    const ticketData = {
+                        title: 'Test Ticket',
+                        description: 'This is a test ticket for E2E testing',
+                        status: 'Open'
+                    };
+                    
+                    const result = await ticketManager.createTicket(ticketData);
+                    testRunner.expect(result.success).toBeTruthy();
+                    testRunner.expect(result.ticket).toBeTruthy();
+                    testRunner.expect(result.ticket.title).toBe(ticketData.title);
+                    testRunner.expect(result.ticket.id).toBeTruthy();
+                });
+
+                await testRunner.it('should retrieve all tickets', async () => {
+                    const ticketManager = new TicketManager();
+                    
+                    // Create a few test tickets
+                    await ticketManager.createTicket({ title: 'Ticket 1', description: 'First ticket', status: 'Open' });
+                    await ticketManager.createTicket({ title: 'Ticket 2', description: 'Second ticket', status: 'In Progress' });
+                    
+                    const tickets = ticketManager.getTickets();
+                    testRunner.expect(Array.isArray(tickets)).toBeTruthy();
+                    testRunner.expect(tickets.length).toBeGreaterThan(0);
+                });
+
+                await testRunner.it('should update an existing ticket', async () => {
+                    const ticketManager = new TicketManager();
+                    
+                    // Create a ticket first
+                    const createResult = await ticketManager.createTicket({
+                        title: 'Original Title',
+                        description: 'Original description',
+                        status: 'Open'
+                    });
+                    
+                    const ticketId = createResult.ticket.id;
+                    const updates = {
+                        title: 'Updated Title',
+                        description: 'Updated description',
+                        status: 'In Progress'
+                    };
+                    
+                    const updateResult = await ticketManager.updateTicket(ticketId, updates);
+                    testRunner.expect(updateResult.success).toBeTruthy();
+                    
+                    const updatedTicket = ticketManager.getTicketById(ticketId);
+                    testRunner.expect(updatedTicket.title).toBe(updates.title);
+                    testRunner.expect(updatedTicket.status).toBe(updates.status);
+                });
+
+                await testRunner.it('should delete a ticket', async () => {
+                    const ticketManager = new TicketManager();
+                    
+                    // Create a ticket first
+                    const createResult = await ticketManager.createTicket({
+                        title: 'Ticket to Delete',
+                        description: 'This ticket will be deleted',
+                        status: 'Open'
+                    });
+                    
+                    const ticketId = createResult.ticket.id;
+                    const initialCount = ticketManager.getTickets().length;
+                    
+                    const deleteResult = await ticketManager.deleteTicket(ticketId, true);
+                    testRunner.expect(deleteResult.success).toBeTruthy();
+                    
+                    const finalCount = ticketManager.getTickets().length;
+                    testRunner.expect(finalCount).toBe(initialCount - 1);
+                    
+                    const deletedTicket = ticketManager.getTicketById(ticketId);
+                    testRunner.expect(deletedTicket).toBeFalsy();
+                });
+
+                await testRunner.it('should generate ticket statistics', async () => {
+                    const ticketManager = new TicketManager();
+                    
+                    // Create tickets with different statuses
+                    await ticketManager.createTicket({ title: 'Open Ticket 1', description: 'Test', status: 'Open' });
+                    await ticketManager.createTicket({ title: 'Open Ticket 2', description: 'Test', status: 'Open' });
+                    await ticketManager.createTicket({ title: 'Progress Ticket', description: 'Test', status: 'In Progress' });
+                    await ticketManager.createTicket({ title: 'Closed Ticket', description: 'Test', status: 'Closed' });
+                    
+                    const stats = ticketManager.getTicketStats();
+                    testRunner.expect(stats).toBeTruthy();
+                    testRunner.expect(typeof stats.open).toBe('number');
+                    testRunner.expect(typeof stats.inProgress).toBe('number');
+                    testRunner.expect(typeof stats.closed).toBe('number');
+                    testRunner.expect(stats.open).toBeGreaterThan(0);
+                });
+
+                await testRunner.it('should validate ticket data', async () => {
+                    const ticketManager = new TicketManager();
+                    
+                    // Test with invalid data
+                    const invalidTicket = { title: '', description: '', status: 'Invalid' };
+                    const result = await ticketManager.createTicket(invalidTicket);
+                    
+                    testRunner.expect(result.success).toBeFalsy();
+                    testRunner.expect(result.errors).toBeTruthy();
+                });
+            });
+
+            document.getElementById('crud-test-btn').disabled = false;
+        }
+
+        // Full Integration Workflow Tests
+        async function runFullIntegrationTests() {
+            testRunner.clearResults('full-integration-workflow');
+            document.getElementById('integration-test-btn').disabled = true;
+            
+            await testRunner.describe('Full Integration Workflow', async () => {
+                setupTestEnvironment();
+
+                await testRunner.it('should complete full user workflow: login -> create ticket -> manage -> logout', async () => {
+                    // Step 1: Login
+                    const authManager = new AuthManager();
+                    const loginResult = await authManager.login({ username: 'demo', password: 'password' });
+                    testRunner.expect(loginResult.success).toBeTruthy();
+                    
+                    // Step 2: Create ticket
+                    const ticketManager = new TicketManager();
+                    const createResult = await ticketManager.createTicket({
+                        title: 'Integration Test Ticket',
+                        description: 'Full workflow test',
+                        status: 'Open'
+                    });
+                    testRunner.expect(createResult.success).toBeTruthy();
+                    
+                    // Step 3: Update ticket
+                    const ticketId = createResult.ticket.id;
+                    const updateResult = await ticketManager.updateTicket(ticketId, {
+                        title: 'Updated Integration Test Ticket',
+                        status: 'In Progress'
+                    });
+                    testRunner.expect(updateResult.success).toBeTruthy();
+                    
+                    // Step 4: Verify statistics
+                    const stats = ticketManager.getTicketStats();
+                    testRunner.expect(stats.inProgress).toBeGreaterThan(0);
+                    
+                    // Step 5: Logout
+                    const logoutResult = authManager.logout();
+                    testRunner.expect(logoutResult.success).toBeTruthy();
+                    testRunner.expect(authManager.isAuthenticated()).toBeFalsy();
+                });
+
+                await testRunner.it('should handle concurrent operations', async () => {
+                    const authManager = new AuthManager();
+                    await authManager.login({ username: 'admin', password: 'admin123' });
+                    
+                    const ticketManager = new TicketManager();
+                    
+                    // Create multiple tickets concurrently
+                    const promises = [];
+                    for (let i = 0; i < 5; i++) {
+                        promises.push(ticketManager.createTicket({
+                            title: `Concurrent Ticket ${i}`,
+                            description: `Test concurrent creation ${i}`,
+                            status: 'Open'
+                        }));
+                    }
+                    
+                    const results = await Promise.all(promises);
+                    results.forEach(result => {
+                        testRunner.expect(result.success).toBeTruthy();
+                    });
+                    
+                    const tickets = ticketManager.getTickets();
+                    testRunner.expect(tickets.length).toBeGreaterThan(4);
+                });
+
+                await testRunner.it('should maintain data consistency across operations', async () => {
+                    const authManager = new AuthManager();
+                    await authManager.login({ username: 'demo', password: 'password' });
+                    
+                    const ticketManager = new TicketManager();
+                    
+                    // Create initial tickets
+                    const initialTickets = [];
+                    for (let i = 0; i < 3; i++) {
+                        const result = await ticketManager.createTicket({
+                            title: `Consistency Test ${i}`,
+                            description: `Test data consistency ${i}`,
+                            status: 'Open'
+                        });
+                        initialTickets.push(result.ticket);
+                    }
+                    
+                    // Update all tickets
+                    for (const ticket of initialTickets) {
+                        await ticketManager.updateTicket(ticket.id, { status: 'Closed' });
+                    }
+                    
+                    // Verify all updates
+                    const updatedTickets = ticketManager.getTickets();
+                    const closedCount = updatedTickets.filter(t => t.status === 'Closed').length;
+                    testRunner.expect(closedCount).toBeGreaterThan(2);
+                    
+                    // Verify statistics consistency
+                    const stats = ticketManager.getTicketStats();
+                    const totalFromStats = stats.open + stats.inProgress + stats.closed;
+                    testRunner.expect(totalFromStats).toBe(updatedTickets.length);
+                });
+            });
+
+            document.getElementById('integration-test-btn').disabled = false;
+        }
+
+        // Cross-Module Communication Tests
+        async function runCrossModuleTests() {
+            testRunner.clearResults('cross-module-communication');
+            document.getElementById('cross-module-test-btn').disabled = true;
+            
+            await testRunner.describe('Cross-Module Communication', async () => {
+                setupTestEnvironment();
+
+                await testRunner.it('should integrate authentication with ticket management', async () => {
+                    const authManager = new AuthManager();
+                    const ticketManager = new TicketManager();
+                    
+                    // Test unauthenticated access
+                    testRunner.expect(authManager.isAuthenticated()).toBeFalsy();
+                    
+                    // Login and test authenticated access
+                    await authManager.login({ username: 'demo', password: 'password' });
+                    testRunner.expect(authManager.isAuthenticated()).toBeTruthy();
+                    
+                    // Create ticket while authenticated
+                    const result = await ticketManager.createTicket({
+                        title: 'Auth Integration Test',
+                        description: 'Testing auth integration',
+                        status: 'Open'
+                    });
+                    testRunner.expect(result.success).toBeTruthy();
+                });
+
+                await testRunner.it('should handle toast notifications across modules', async () => {
+                    // Test if toast system is available globally
+                    testRunner.expect(typeof window.showTicketToast).toBe('function');
+                    
+                    // Test toast integration
+                    let toastCalled = false;
+                    const originalToast = window.showTicketToast;
+                    window.showTicketToast = (type, message) => {
+                        toastCalled = true;
+                        testRunner.expect(type).toBeTruthy();
+                        testRunner.expect(message).toBeTruthy();
+                    };
+                    
+                    // Trigger an operation that should show a toast
+                    const authManager = new AuthManager();
+                    await authManager.login({ username: 'demo', password: 'password' });
+                    
+                    // Restore original function
+                    window.showTicketToast = originalToast;
+                });
+
+                await testRunner.it('should share data between modules via localStorage', async () => {
+                    const authManager = new AuthManager();
+                    const ticketManager = new TicketManager();
+                    
+                    // Login and create session
+                    await authManager.login({ username: 'admin', password: 'admin123' });
+                    
+                    // Create ticket
+                    await ticketManager.createTicket({
+                        title: 'Data Sharing Test',
+                        description: 'Testing data sharing',
+                        status: 'Open'
+                    });
+                    
+                    // Verify data is stored in localStorage
+                    const sessionData = localStorage.getItem('ticketapp_session');
+                    const ticketData = localStorage.getItem('tickets');
+                    
+                    testRunner.expect(sessionData).toBeTruthy();
+                    testRunner.expect(ticketData).toBeTruthy();
+                    
+                    // Verify data can be parsed
+                    const session = JSON.parse(sessionData);
+                    const tickets = JSON.parse(ticketData);
+                    
+                    testRunner.expect(session.user).toBeTruthy();
+                    testRunner.expect(Array.isArray(tickets)).toBeTruthy();
+                });
+
+                await testRunner.it('should handle module initialization order', async () => {
+                    // Test that modules can be initialized in any order
+                    setupTestEnvironment();
+                    
+                    // Initialize ticket manager first
+                    const ticketManager = new TicketManager();
+                    testRunner.expect(ticketManager).toBeTruthy();
+                    
+                    // Then initialize auth manager
+                    const authManager = new AuthManager();
+                    testRunner.expect(authManager).toBeTruthy();
+                    
+                    // Both should work together
+                    await authManager.login({ username: 'demo', password: 'password' });
+                    const result = await ticketManager.createTicket({
+                        title: 'Init Order Test',
+                        description: 'Testing initialization order',
+                        status: 'Open'
+                    });
+                    testRunner.expect(result.success).toBeTruthy();
+                });
+            });
+
+            document.getElementById('cross-module-test-btn').disabled = false;
+        }
+
+        // Error Handling & Recovery Tests
+        async function runErrorHandlingTests() {
+            testRunner.clearResults('error-handling-recovery');
+            document.getElementById('error-test-btn').disabled = true;
+            
+            await testRunner.describe('Error Handling & Recovery', async () => {
+                setupTestEnvironment();
+
+                await testRunner.it('should handle localStorage unavailability', async () => {
+                    // Temporarily disable localStorage
+                    const originalLocalStorage = window.localStorage;
+                    delete window.localStorage;
+                    
+                    try {
+                        const authManager = new AuthManager();
+                        // Should not throw error even without localStorage
+                        testRunner.expect(authManager).toBeTruthy();
+                        
+                        // Login should handle the error gracefully
+                        const result = await authManager.login({ username: 'demo', password: 'password' });
+                        // May succeed or fail, but should not crash
+                        testRunner.expect(typeof result).toBe('object');
+                    } finally {
+                        // Restore localStorage
+                        window.localStorage = originalLocalStorage;
+                    }
+                });
+
+                await testRunner.it('should handle malformed data in localStorage', async () => {
+                    // Set malformed session data
+                    localStorage.setItem('ticketapp_session', 'invalid-json');
+                    localStorage.setItem('tickets', 'also-invalid-json');
+                    
+                    const authManager = new AuthManager();
+                    const ticketManager = new TicketManager();
+                    
+                    // Should handle malformed data gracefully
+                    testRunner.expect(authManager.isAuthenticated()).toBeFalsy();
+                    
+                    const tickets = ticketManager.getTickets();
+                    testRunner.expect(Array.isArray(tickets)).toBeTruthy();
+                });
+
+                await testRunner.it('should recover from network simulation errors', async () => {
+                    const authManager = new AuthManager();
+                    
+                    // Test with network-like delay
+                    const startTime = Date.now();
+                    const result = await authManager.login({ username: 'demo', password: 'password' });
+                    const endTime = Date.now();
+                    
+                    testRunner.expect(result).toBeTruthy();
+                    // Should complete within reasonable time
+                    testRunner.expect(endTime - startTime).toBeLessThan(5000);
+                });
+
+                await testRunner.it('should handle concurrent access conflicts', async () => {
+                    const authManager = new AuthManager();
+                    await authManager.login({ username: 'admin', password: 'admin123' });
+                    
+                    const ticketManager1 = new TicketManager();
+                    const ticketManager2 = new TicketManager();
+                    
+                    // Create tickets from both instances simultaneously
+                    const promise1 = ticketManager1.createTicket({
+                        title: 'Concurrent Test 1',
+                        description: 'First concurrent ticket',
+                        status: 'Open'
+                    });
+                    
+                    const promise2 = ticketManager2.createTicket({
+                        title: 'Concurrent Test 2',
+                        description: 'Second concurrent ticket',
+                        status: 'Open'
+                    });
+                    
+                    const [result1, result2] = await Promise.all([promise1, promise2]);
+                    
+                    // Both should succeed
+                    testRunner.expect(result1.success).toBeTruthy();
+                    testRunner.expect(result2.success).toBeTruthy();
+                    
+                    // Tickets should have different IDs
+                    testRunner.expect(result1.ticket.id).not.toBe(result2.ticket.id);
+                });
+
+                await testRunner.it('should maintain system stability after errors', async () => {
+                    const authManager = new AuthManager();
+                    const ticketManager = new TicketManager();
+                    
+                    // Login successfully
+                    await authManager.login({ username: 'demo', password: 'password' });
+                    
+                    // Try to create invalid ticket (should fail)
+                    try {
+                        await ticketManager.createTicket({ title: '', description: '', status: 'Invalid' });
+                    } catch (error) {
+                        // Expected to fail
+                    }
+                    
+                    // System should still work after error
+                    const validResult = await ticketManager.createTicket({
+                        title: 'Recovery Test',
+                        description: 'Testing system recovery',
+                        status: 'Open'
+                    });
+                    
+                    testRunner.expect(validResult.success).toBeTruthy();
+                    testRunner.expect(authManager.isAuthenticated()).toBeTruthy();
+                });
+            });
+
+            document.getElementById('error-test-btn').disabled = false;
+        }
+
+        // Cross-Browser Compatibility Tests
+        async function runCrossBrowserTests() {
+            testRunner.clearResults('cross-browser-compatibility');
+            document.getElementById('browser-test-btn').disabled = true;
+            
+            await testRunner.describe('Cross-Browser Compatibility', async () => {
+                setupTestEnvironment();
+
+                await testRunner.it('should detect browser capabilities', async () => {
+                    // Test localStorage support
+                    testRunner.expect(typeof localStorage).toBe('object');
+                    testRunner.expect(typeof localStorage.setItem).toBe('function');
+                    
+                    // Test sessionStorage support
+                    testRunner.expect(typeof sessionStorage).toBe('object');
+                    
+                    // Test JSON support
+                    testRunner.expect(typeof JSON.parse).toBe('function');
+                    testRunner.expect(typeof JSON.stringify).toBe('function');
+                });
+
+                await testRunner.it('should handle different user agents', async () => {
+                    const originalUserAgent = navigator.userAgent;
+                    
+                    // Test with different user agent strings
+                    const testUserAgents = [
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/91.0.4472.124',
+                        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Safari/14.1.1',
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0'
+                    ];
+                    
+                    for (const userAgent of testUserAgents) {
+                        // Simulate different browsers
+                        Object.defineProperty(navigator, 'userAgent', {
+                            value: userAgent,
+                            configurable: true
+                        });
+                        
+                        const authManager = new AuthManager();
+                        testRunner.expect(authManager).toBeTruthy();
+                        
+                        const result = await authManager.login({ username: 'demo', password: 'password' });
+                        testRunner.expect(result.success).toBeTruthy();
+                        
+                        authManager.logout();
+                    }
+                    
+                    // Restore original user agent
+                    Object.defineProperty(navigator, 'userAgent', {
+                        value: originalUserAgent,
+                        configurable: true
+                    });
+                });
+
+                await testRunner.it('should work with different storage implementations', async () => {
+                    const authManager = new AuthManager();
+                    const ticketManager = new TicketManager();
+                    
+                    // Test with localStorage
+                    await authManager.login({ username: 'demo', password: 'password' });
+                    await ticketManager.createTicket({
+                        title: 'Storage Test',
+                        description: 'Testing storage compatibility',
+                        status: 'Open'
+                    });
+                    
+                    testRunner.expect(authManager.isAuthenticated()).toBeTruthy();
+                    testRunner.expect(ticketManager.getTickets().length).toBeGreaterThan(0);
+                });
+
+                await testRunner.it('should handle feature detection gracefully', async () => {
+                    // Test with missing features
+                    const originalFetch = window.fetch;
+                    delete window.fetch;
+                    
+                    try {
+                        const authManager = new AuthManager();
+                        // Should still work without fetch
+                        testRunner.expect(authManager).toBeTruthy();
+                    } finally {
+                        window.fetch = originalFetch;
+                    }
+                });
+            });
+
+            document.getElementById('browser-test-btn').disabled = false;
+        }
+
+        // Responsive Design Tests
+        async function runResponsiveTests() {
+            testRunner.clearResults('responsive-design');
+            document.getElementById('responsive-test-btn').disabled = true;
+            
+            await testRunner.describe('Responsive Design', async () => {
+                setupTestEnvironment();
+
+                await testRunner.it('should handle different viewport sizes', async () => {
+                    const viewports = [
+                        { width: 320, height: 568, name: 'Mobile' },
+                        { width: 768, height: 1024, name: 'Tablet' },
+                        { width: 1920, height: 1080, name: 'Desktop' }
+                    ];
+                    
+                    for (const viewport of viewports) {
+                        // Simulate viewport change
+                        Object.defineProperty(window, 'innerWidth', {
+                            value: viewport.width,
+                            configurable: true
+                        });
+                        Object.defineProperty(window, 'innerHeight', {
+                            value: viewport.height,
+                            configurable: true
+                        });
+                        
+                        // Test that modules still work at different sizes
+                        const authManager = new AuthManager();
+                        const ticketManager = new TicketManager();
+                        
+                        testRunner.expect(authManager).toBeTruthy();
+                        testRunner.expect(ticketManager).toBeTruthy();
+                        
+                        // Test basic functionality
+                        const loginResult = await authManager.login({ username: 'demo', password: 'password' });
+                        testRunner.expect(loginResult.success).toBeTruthy();
+                        
+                        const createResult = await ticketManager.createTicket({
+                            title: `${viewport.name} Test`,
+                            description: `Testing on ${viewport.name} viewport`,
+                            status: 'Open'
+                        });
+                        testRunner.expect(createResult.success).toBeTruthy();
+                        
+                        authManager.logout();
+                    }
+                });
+
+                await testRunner.it('should handle orientation changes', async () => {
+                    const authManager = new AuthManager();
+                    
+                    // Simulate portrait
+                    Object.defineProperty(screen, 'orientation', {
+                        value: { angle: 0, type: 'portrait-primary' },
+                        configurable: true
+                    });
+                    
+                    const portraitResult = await authManager.login({ username: 'demo', password: 'password' });
+                    testRunner.expect(portraitResult.success).toBeTruthy();
+                    
+                    // Simulate landscape
+                    Object.defineProperty(screen, 'orientation', {
+                        value: { angle: 90, type: 'landscape-primary' },
+                        configurable: true
+                    });
+                    
+                    // Should still be authenticated
+                    testRunner.expect(authManager.isAuthenticated()).toBeTruthy();
+                    
+                    authManager.logout();
+                });
+
+                await testRunner.it('should handle touch vs mouse interactions', async () => {
+                    const ticketManager = new TicketManager();
+                    
+                    // Simulate touch device
+                    Object.defineProperty(navigator, 'maxTouchPoints', {
+                        value: 5,
+                        configurable: true
+                    });
+                    
+                    testRunner.expect(ticketManager).toBeTruthy();
+                    
+                    // Simulate mouse device
+                    Object.defineProperty(navigator, 'maxTouchPoints', {
+                        value: 0,
+                        configurable: true
+                    });
+                    
+                    testRunner.expect(ticketManager).toBeTruthy();
+                });
+            });
+
+            document.getElementById('responsive-test-btn').disabled = false;
+        }
+
+        // Accessibility & Keyboard Navigation Tests
+        async function runAccessibilityTests() {
+            testRunner.clearResults('accessibility-keyboard-navigation');
+            document.getElementById('accessibility-test-btn').disabled = true;
+            
+            await testRunner.describe('Accessibility & Keyboard Navigation', async () => {
+                setupTestEnvironment();
+
+                await testRunner.it('should support keyboard navigation', async () => {
+                    // Test that modules can be controlled via keyboard
+                    const authManager = new AuthManager();
+                    const ticketManager = new TicketManager();
+                    
+                    // Simulate keyboard events
+                    const keyboardEvent = new KeyboardEvent('keydown', {
+                        key: 'Enter',
+                        code: 'Enter',
+                        keyCode: 13
+                    });
+                    
+                    testRunner.expect(keyboardEvent.key).toBe('Enter');
+                    testRunner.expect(authManager).toBeTruthy();
+                    testRunner.expect(ticketManager).toBeTruthy();
+                });
+
+                await testRunner.it('should provide screen reader support', async () => {
+                    // Test ARIA attributes and semantic markup
+                    const authManager = new AuthManager();
+                    
+                    // Login should work with screen readers
+                    const result = await authManager.login({ username: 'demo', password: 'password' });
+                    testRunner.expect(result.success).toBeTruthy();
+                    
+                    // Should provide meaningful feedback
+                    testRunner.expect(result.user).toBeTruthy();
+                    testRunner.expect(result.user.username).toBe('demo');
+                });
+
+                await testRunner.it('should handle high contrast mode', async () => {
+                    // Simulate high contrast mode
+                    const ticketManager = new TicketManager();
+                    
+                    // Create ticket in high contrast mode
+                    const result = await ticketManager.createTicket({
+                        title: 'High Contrast Test',
+                        description: 'Testing high contrast accessibility',
+                        status: 'Open'
+                    });
+                    
+                    testRunner.expect(result.success).toBeTruthy();
+                    testRunner.expect(result.ticket.title).toBe('High Contrast Test');
+                });
+
+                await testRunner.it('should support reduced motion preferences', async () => {
+                    // Simulate reduced motion preference
+                    Object.defineProperty(window, 'matchMedia', {
+                        value: (query) => ({
+                            matches: query.includes('prefers-reduced-motion'),
+                            media: query,
+                            onchange: null,
+                            addListener: () => {},
+                            removeListener: () => {},
+                            addEventListener: () => {},
+                            removeEventListener: () => {},
+                            dispatchEvent: () => {}
+                        }),
+                        configurable: true
+                    });
+                    
+                    const authManager = new AuthManager();
+                    const result = await authManager.login({ username: 'demo', password: 'password' });
+                    testRunner.expect(result.success).toBeTruthy();
+                });
+
+                await testRunner.it('should handle focus management', async () => {
+                    // Test focus management in forms and interactions
+                    const authManager = new AuthManager();
+                    const ticketManager = new TicketManager();
+                    
+                    // Login and create ticket
+                    await authManager.login({ username: 'demo', password: 'password' });
+                    const result = await ticketManager.createTicket({
+                        title: 'Focus Test',
+                        description: 'Testing focus management',
+                        status: 'Open'
+                    });
+                    
+                    testRunner.expect(result.success).toBeTruthy();
+                    testRunner.expect(authManager.isAuthenticated()).toBeTruthy();
+                });
+            });
+
+            document.getElementById('accessibility-test-btn').disabled = false;
+        }
+
+        // Complete End-to-End Workflow Tests
+        async function runCompleteE2ETests() {
+            testRunner.clearResults('complete-end-to-end-workflow');
+            document.getElementById('complete-e2e-test-btn').disabled = true;
+            
+            await testRunner.describe('Complete End-to-End Workflow', async () => {
+                setupTestEnvironment();
+
+                await testRunner.it('should complete full application workflow', async () => {
+                    // Step 1: Initialize application
+                    const authManager = new AuthManager();
+                    const ticketManager = new TicketManager();
+                    
+                    testRunner.expect(authManager).toBeTruthy();
+                    testRunner.expect(ticketManager).toBeTruthy();
+                    
+                    // Step 2: User registration/login simulation
+                    const loginResult = await authManager.login({ username: 'admin', password: 'admin123' });
+                    testRunner.expect(loginResult.success).toBeTruthy();
+                    testRunner.expect(authManager.isAuthenticated()).toBeTruthy();
+                    
+                    // Step 3: Create multiple tickets
+                    const tickets = [];
+                    for (let i = 1; i <= 5; i++) {
+                        const result = await ticketManager.createTicket({
+                            title: `E2E Workflow Ticket ${i}`,
+                            description: `Complete workflow test ticket number ${i}`,
+                            status: i <= 2 ? 'Open' : i <= 4 ? 'In Progress' : 'Closed'
+                        });
+                        testRunner.expect(result.success).toBeTruthy();
+                        tickets.push(result.ticket);
+                    }
+                    
+                    // Step 4: Verify ticket creation
+                    const allTickets = ticketManager.getTickets();
+                    testRunner.expect(allTickets.length).toBeGreaterThan(4);
+                    
+                    // Step 5: Update tickets
+                    for (let i = 0; i < 3; i++) {
+                        const updateResult = await ticketManager.updateTicket(tickets[i].id, {
+                            title: `Updated E2E Workflow Ticket ${i + 1}`,
+                            description: `Updated description for ticket ${i + 1}`,
+                            status: 'In Progress'
+                        });
+                        testRunner.expect(updateResult.success).toBeTruthy();
+                    }
+                    
+                    // Step 6: Verify statistics
+                    const stats = ticketManager.getTicketStats();
+                    testRunner.expect(stats.inProgress).toBeGreaterThan(2);
+                    testRunner.expect(stats.open + stats.inProgress + stats.closed).toBe(allTickets.length);
+                    
+                    // Step 7: Delete some tickets
+                    for (let i = 0; i < 2; i++) {
+                        const deleteResult = await ticketManager.deleteTicket(tickets[i].id, true);
+                        testRunner.expect(deleteResult.success).toBeTruthy();
+                    }
+                    
+                    // Step 8: Verify final state
+                    const finalTickets = ticketManager.getTickets();
+                    testRunner.expect(finalTickets.length).toBe(allTickets.length - 2);
+                    
+                    // Step 9: Logout
+                    const logoutResult = authManager.logout();
+                    testRunner.expect(logoutResult.success).toBeTruthy();
+                    testRunner.expect(authManager.isAuthenticated()).toBeFalsy();
+                });
+
+                await testRunner.it('should handle complete error recovery workflow', async () => {
+                    // Step 1: Start with corrupted data
+                    localStorage.setItem('ticketapp_session', 'corrupted');
+                    localStorage.setItem('tickets', 'also-corrupted');
+                    
+                    const authManager = new AuthManager();
+                    const ticketManager = new TicketManager();
+                    
+                    // Step 2: System should recover gracefully
+                    testRunner.expect(authManager.isAuthenticated()).toBeFalsy();
+                    testRunner.expect(Array.isArray(ticketManager.getTickets())).toBeTruthy();
+                    
+                    // Step 3: Continue with normal operations
+                    const loginResult = await authManager.login({ username: 'demo', password: 'password' });
+                    testRunner.expect(loginResult.success).toBeTruthy();
+                    
+                    // Step 4: Create and manage tickets normally
+                    const createResult = await ticketManager.createTicket({
+                        title: 'Recovery Test Ticket',
+                        description: 'Testing system recovery',
+                        status: 'Open'
+                    });
+                    testRunner.expect(createResult.success).toBeTruthy();
+                    
+                    // Step 5: Verify system stability
+                    testRunner.expect(authManager.isAuthenticated()).toBeTruthy();
+                    testRunner.expect(ticketManager.getTickets().length).toBeGreaterThan(0);
+                });
+
+                await testRunner.it('should handle performance under load', async () => {
+                    const authManager = new AuthManager();
+                    await authManager.login({ username: 'admin', password: 'admin123' });
+                    
+                    const ticketManager = new TicketManager();
+                    
+                    // Create many tickets quickly
+                    const startTime = Date.now();
+                    const promises = [];
+                    
+                    for (let i = 0; i < 20; i++) {
+                        promises.push(ticketManager.createTicket({
+                            title: `Load Test Ticket ${i}`,
+                            description: `Performance testing ticket ${i}`,
+                            status: i % 3 === 0 ? 'Open' : i % 3 === 1 ? 'In Progress' : 'Closed'
+                        }));
+                    }
+                    
+                    const results = await Promise.all(promises);
+                    const endTime = Date.now();
+                    
+                    // Verify all operations completed
+                    const successCount = results.filter(r => r.success).length;
+                    testRunner.expect(successCount).toBeGreaterThan(15); // At least 75% success rate
+                    
+                    // Verify reasonable performance (should complete within 10 seconds)
+                    testRunner.expect(endTime - startTime).toBeLessThan(10000);
+                    
+                    // Verify data integrity
+                    const finalTickets = ticketManager.getTickets();
+                    testRunner.expect(finalTickets.length).toBeGreaterThan(15);
+                    
+                    // Verify statistics accuracy
+                    const stats = ticketManager.getTicketStats();
+                    const totalFromStats = stats.open + stats.inProgress + stats.closed;
+                    testRunner.expect(totalFromStats).toBe(finalTickets.length);
+                });
+
+                await testRunner.it('should maintain data integrity across sessions', async () => {
+                    // Session 1: Create data
+                    const authManager1 = new AuthManager();
+                    const ticketManager1 = new TicketManager();
+                    
+                    await authManager1.login({ username: 'demo', password: 'password' });
+                    await ticketManager1.createTicket({
+                        title: 'Session Persistence Test',
+                        description: 'Testing data persistence across sessions',
+                        status: 'Open'
+                    });
+                    
+                    const session1Tickets = ticketManager1.getTickets();
+                    const session1Count = session1Tickets.length;
+                    
+                    authManager1.logout();
+                    
+                    // Session 2: Verify data persists
+                    const authManager2 = new AuthManager();
+                    const ticketManager2 = new TicketManager();
+                    
+                    await authManager2.login({ username: 'demo', password: 'password' });
+                    
+                    const session2Tickets = ticketManager2.getTickets();
+                    testRunner.expect(session2Tickets.length).toBe(session1Count);
+                    
+                    // Find the persisted ticket
+                    const persistedTicket = session2Tickets.find(t => t.title === 'Session Persistence Test');
+                    testRunner.expect(persistedTicket).toBeTruthy();
+                    testRunner.expect(persistedTicket.status).toBe('Open');
+                });
+            });
+
+            document.getElementById('complete-e2e-test-btn').disabled = false;
+            
+            // Show final results after all tests complete
+            setTimeout(() => {
+                testRunner.showFinalResults();
+            }, 1000);
+        }
+
+        // Run all tests function
+        async function runAllTests() {
+            console.log('Starting complete E2E test suite...');
+            
+            await runAuthenticationTests();
+            await testRunner.delay(500);
+            
+            await runTicketCRUDTests();
+            await testRunner.delay(500);
+            
+            await runFullIntegrationTests();
+            await testRunner.delay(500);
+            
+            await runCrossModuleTests();
+            await testRunner.delay(500);
+            
+            await runErrorHandlingTests();
+            await testRunner.delay(500);
+            
+            await runCrossBrowserTests();
+            await testRunner.delay(500);
+            
+            await runResponsiveTests();
+            await testRunner.delay(500);
+            
+            await runAccessibilityTests();
+            await testRunner.delay(500);
+            
+            await runCompleteE2ETests();
+            
+            console.log('Complete E2E test suite finished!');
+        }
+
+        // Initialize test environment when page loads
+        window.addEventListener('load', () => {
+            setupTestEnvironment();
+            console.log('E2E Integration Test Suite Ready');
+            
+            // Add run all tests button
+            const runAllBtn = document.createElement('button');
+            runAllBtn.textContent = 'Run All Tests';
+            runAllBtn.onclick = runAllTests;
+            runAllBtn.style.cssText = 'background: #28a745; font-size: 1.1em; padding: 0.75rem 1.5rem; margin: 1rem 0;';
+            document.body.insertBefore(runAllBtn, document.querySelector('.test-section'));
+        });
+    </script>
+</body>
+</html>

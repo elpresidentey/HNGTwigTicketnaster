@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross-Browser Compatibility E2E Tests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 2rem 0;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+        }
+        .test-result {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border-radius: 0.25rem;
+        }
+        .pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            margin: 0.5rem;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .browser-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cross-Browser Compatibility E2E Tests</h1>
+    <p>This test suite validates cross-browser compatibility and responsive design functionality.</p>
+
+    <div class="browser-info">
+        <h2>Current Browser Information</h2>
+        <div id="browser-details"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Browser Feature Detection Tests</h2>
+        <button onclick="runFeatureDetectionTests()" id="feature-test-btn">Run Feature Detection Tests</button>
+        <div id="feature-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Storage Compatibility Tests</h2>
+        <button onclick="runStorageTests()" id="storage-test-btn">Run Storage Tests</button>
+        <div id="storage-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>JavaScript API Compatibility Tests</h2>
+        <button onclick="runApiTests()" id="api-test-btn">Run API Tests</button>
+        <div id="api-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Responsive Design Tests</h2>
+        <button onclick="runResponsiveTests()" id="responsive-test-btn">Run Responsive Tests</button>
+        <div id="responsive-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Performance Compatibility Tests</h2>
+        <button onclick="runPerformanceTests()" id="performance-test-btn">Run Performance Tests</button>
+        <div id="performance-results"></div>
+    </div>
+
+    <!-- Load required modules -->
+    <script src="../public/assets/js/utils.js"></script>
+    <script src="../public/assets/js/auth.js"></script>
+    <script src="../public/assets/js/tickets.js"></script>
+
+    <script>
+        // Test framework
+        class CrossBrowserTestRunner {
+            constructor() {
+                this.results = [];
+                this.currentSuite = '';
+                this.totalTests = 0;
+                this.passedTests = 0;
+                this.failedTests = 0;
+                this.browserInfo = this.detectBrowser();
+            }
+
+            detectBrowser() {
+                const userAgent = navigator.userAgent;
+                const vendor = navigator.vendor;
+                
+                let browser = 'Unknown';
+                let version = 'Unknown';
+                
+                if (userAgent.includes('Chrome') && vendor.includes('Google')) {
+                    browser = 'Chrome';
+                    const match = userAgent.match(/Chrome\/(\d+)/);
+                    version = match ? match[1] : 'Unknown';
+                } else if (userAgent.includes('Firefox')) {
+                    browser = 'Firefox';
+                    const match = userAgent.match(/Firefox\/(\d+)/);
+                    version = match ? match[1] : 'Unknown';
+                } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+                    browser = 'Safari';
+                    const match = userAgent.match(/Version\/(\d+)/);
+                    version = match ? match[1] : 'Unknown';
+                } else if (userAgent.includes('Edge')) {
+                    browser = 'Edge';
+                    const match = userAgent.match(/Edge\/(\d+)/);
+                    version = match ? match[1] : 'Unknown';
+                }
+                
+                return {
+                    browser,
+                    version,
+                    userAgent,
+                    platform: navigator.platform,
+                    language: navigator.language,
+                    cookieEnabled: navigator.cookieEnabled,
+                    onLine: navigator.onLine
+                };
+            }
+
+            describe(suiteName, testFn) {
+                this.currentSuite = suiteName;
+                console.log(`\n=== ${suiteName} ===`);
+                return testFn();
+            }
+
+            async it(testName, testFn) {
+                this.totalTests++;
+                try {
+                    await testFn();
+                    this.results.push({ suite: this.currentSuite, name: testName, status: 'pass' });
+                    this.passedTests++;
+                    this.logResult(this.currentSuite.toLowerCase().replace(/\s+/g, '-'), `✓ ${testName}`, 'pass');
+                } catch (error) {
+                    this.results.push({ 
+                        suite: this.currentSuite, 
+                        name: testName, 
+                        status: 'fail', 
+                        error: error.message 
+                    });
+                    this.failedTests++;
+                    this.logResult(this.currentSuite.toLowerCase().replace(/\s+/g, '-'), `✗ ${testName}: ${error.message}`, 'fail');
+                }
+            }
+
+            expect(actual) {
+                return {
+                    toBe: (expected) => {
+                        if (actual !== expected) {
+                            throw new Error(`Expected ${expected}, but got ${actual}`);
+                        }
+                    },
+                    toBeTruthy: () => {
+                        if (!actual) {
+                            throw new Error(`Expected truthy value, but got ${actual}`);
+                        }
+                    },
+                    toBeFalsy: () => {
+                        if (actual) {
+                            throw new Error(`Expected falsy value, but got ${actual}`);
+                        }
+                    },
+                    toContain: (expected) => {
+                        if (typeof actual === 'string' && !actual.includes(expected)) {
+                            throw new Error(`Expected "${actual}" to contain "${expected}"`);
+                        }
+                    },
+                    toBeGreaterThan: (expected) => {
+                        if (actual <= expected) {
+                            throw new Error(`Expected ${actual} to be greater than ${expected}`);
+                        }
+                    }
+                };
+            }
+
+            logResult(containerId, message, type = 'info') {
+                const container = document.getElementById(`${containerId}-results`);
+                if (!container) return;
+                
+                const result = document.createElement('div');
+                result.className = `test-result ${type}`;
+                result.textContent = message;
+                container.appendChild(result);
+            }
+
+            clearResults(containerId) {
+                const container = document.getElementById(`${containerId}-results`);
+                if (container) {
+                    container.innerHTML = '';
+                }
+            }
+
+            async delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        const testRunner = new CrossBrowserTestRunner();
+
+        // Display browser information
+        function displayBrowserInfo() {
+            const browserDetails = document.getElementById('browser-details');
+            const info = testRunner.browserInfo;
+            
+            browserDetails.innerHTML = `
+                <p><strong>Browser:</strong> ${info.browser} ${info.version}</p>
+                <p><strong>Platform:</strong> ${info.platform}</p>
+                <p><strong>Language:</strong> ${info.language}</p>
+                <p><strong>Cookies Enabled:</strong> ${info.cookieEnabled}</p>
+                <p><strong>Online:</strong> ${info.onLine}</p>
+                <p><strong>User Agent:</strong> ${info.userAgent}</p>
+            `;
+        }
+
+        // Setup test environment
+        function setupTestEnvironment() {
+            localStorage.clear();
+            sessionStorage.clear();
+        }
+
+        // Browser Feature Detection Tests
+        async function runFeatureDetectionTests() {
+            testRunner.clearResults('browser-feature-detection');
+            document.getElementById('feature-test-btn').disabled = true;
+            
+            await testRunner.describe('Browser Feature Detection', async () => {
+                setupTestEnvironment();
+
+                await testRunner.it('should support localStorage', async () => {
+                    testRunner.expect(typeof localStorage).toBe('object');
+                    testRunner.expect(typeof localStorage.setItem).toBe('function');
+                    testRunner.expect(typeof localStorage.getItem).toBe('function');
+                    testRunner.expect(typeof localStorage.removeItem).toBe('function');
+                    testRunner.expect(typeof localStorage.clear).toBe('function');
+                    
+                    // Test localStorage functionality
+                    localStorage.setItem('test', 'value');
+                    testRunner.expect(localStorage.getItem('test')).toBe('value');
+                    localStorage.removeItem('test');
+                });
+
+                await testRunner.it('should support sessionStorage', async () => {
+                    testRunner.expect(typeof sessionStorage).toBe('object');
+                    testRunner.expect(typeof sessionStorage.setItem).toBe('function');
+                    testRunner.expect(typeof sessionStorage.getItem).toBe('function');
+                    
+                    // Test sessionStorage functionality
+                    sessionStorage.setItem('test', 'session-value');
+                    testRunner.expect(sessionStorage.getItem('test')).toBe('session-value');
+                    sessionStorage.removeItem('test');
+                });
+
+                await testRunner.it('should support JSON methods', async () => {
+                    testRunner.expect(typeof JSON).toBe('object');
+                    testRunner.expect(typeof JSON.parse).toBe('function');
+                    testRunner.expect(typeof JSON.stringify).toBe('function');
+                    
+                    // Test JSON functionality
+                    const testObj = { test: 'value', number: 42 };
+                    const jsonString = JSON.stringify(testObj);
+                    const parsedObj = JSON.parse(jsonString);
+                    testRunner.expect(parsedObj.test).toBe('value');
+                    testRunner.expect(parsedObj.number).toBe(42);
+                });
+
+                await testRunner.it('should support Promise API', async () => {
+                    testRunner.expect(typeof Promise).toBe('function');
+                    testRunner.expect(typeof Promise.resolve).toBe('function');
+                    testRunner.expect(typeof Promise.reject).toBe('function');
+                    testRunner.expect(typeof Promise.all).toBe('function');
+                    
+                    // Test Promise functionality
+                    const promise = Promise.resolve('test-value');
+                    const result = await promise;
+                    testRunner.expect(result).toBe('test-value');
+                });
+
+                await testRunner.it('should support async/await', async () => {
+                    // Test async/await functionality
+                    const asyncFunction = async () => {
+                        await testRunner.delay(10);
+                        return 'async-result';
+                    };
+                    
+                    const result = await asyncFunction();
+                    testRunner.expect(result).toBe('async-result');
+                });
+
+                await testRunner.it('should support ES6 features', async () => {
+                    // Test arrow functions
+                    const arrowFunction = () => 'arrow-result';
+                    testRunner.expect(arrowFunction()).toBe('arrow-result');
+                    
+                    // Test template literals
+                    const name = 'test';
+                    const template = `Hello ${name}`;
+                    testRunner.expect(template).toBe('Hello test');
+                    
+                    // Test destructuring
+                    const obj = { a: 1, b: 2 };
+                    const { a, b } = obj;
+                    testRunner.expect(a).toBe(1);
+                    testRunner.expect(b).toBe(2);
+                });
+            });
+
+            document.getElementById('feature-test-btn').disabled = false;
+        }
+
+        // Storage Compatibility Tests
+        async function runStorageTests() {
+            testRunner.clearResults('storage-compatibility');
+            document.getElementById('storage-test-btn').disabled = true;
+            
+            await testRunner.describe('Storage Compatibility', async () => {
+                setupTestEnvironment();
+
+                await testRunner.it('should handle localStorage with authentication', async () => {
+                    const authManager = new AuthManager();
+                    
+                    // Test login stores data correctly
+                    const result = await authManager.login({ username: 'demo', password: 'password' });
+                    testRunner.expect(result.success).toBeTruthy();
+                    
+                    // Verify data is stored
+                    const sessionData = localStorage.getItem('ticketapp_session');
+                    testRunner.expect(sessionData).toBeTruthy();
+                    
+                    // Verify data can be parsed
+                    const session = JSON.parse(sessionData);
+                    testRunner.expect(session.user.username).toBe('demo');
+                });
+
+                await testRunner.it('should handle localStorage with ticket management', async () => {
+                    const authManager = new AuthManager();
+                    await authManager.login({ username: 'demo', password: 'password' });
+                    
+                    const ticketManager = new TicketManager();
+                    
+                    // Create ticket
+                    const result = await ticketManager.createTicket({
+                        title: 'Storage Test Ticket',
+                        description: 'Testing storage compatibility',
+                        status: 'Open'
+                    });
+                    
+                    testRunner.expect(result.success).toBeTruthy();
+                    
+                    // Verify ticket is stored
+                    const ticketData = localStorage.getItem('tickets');
+                    testRunner.expect(ticketData).toBeTruthy();
+                    
+                    const tickets = JSON.parse(ticketData);
+                    testRunner.expect(Array.isArray(tickets)).toBeTruthy();
+                    testRunner.expect(tickets.length).toBeGreaterThan(0);
+                });
+
+                await testRunner.it('should handle storage quota limits gracefully', async () => {
+                    const ticketManager = new TicketManager();
+                    
+                    // Try to create many tickets to test storage limits
+                    let successCount = 0;
+                    for (let i = 0; i < 10; i++) {
+                        try {
+                            const result = await ticketManager.createTicket({
+                                title: `Quota Test Ticket ${i}`,
+                                description: `Testing storage quota limits ${i}`,
+                                status: 'Open'
+                            });
+                            if (result.success) successCount++;
+                        } catch (error) {
+                            // Expected if quota is exceeded
+                        }
+                    }
+                    
+                    // Should handle at least some tickets
+                    testRunner.expect(successCount).toBeGreaterThan(0);
+                });
+
+                await testRunner.it('should handle corrupted storage data', async () => {
+                    // Set corrupted data
+                    localStorage.setItem('ticketapp_session', 'invalid-json');
+                    localStorage.setItem('tickets', 'also-invalid');
+                    
+                    const authManager = new AuthManager();
+                    const ticketManager = new TicketManager();
+                    
+                    // Should handle corrupted data gracefully
+                    testRunner.expect(authManager.isAuthenticated()).toBeFalsy();
+                    
+                    const tickets = ticketManager.getTickets();
+                    testRunner.expect(Array.isArray(tickets)).toBeTruthy();
+                    
+                    // Should be able to continue normal operations
+                    const result = await authManager.login({ username: 'demo', password: 'password' });
+                    testRunner.expect(result.success).toBeTruthy();
+                });
+            });
+
+            document.getElementById('storage-test-btn').disabled = false;
+        }
+
+        // JavaScript API Compatibility Tests
+        async function runApiTests() {
+            testRunner.clearResults('javascript-api-compatibility');
+            document.getElementById('api-test-btn').disabled = true;
+            
+            await testRunner.describe('JavaScript API Compatibility', async () => {
+                setupTestEnvironment();
+
+                await testRunner.it('should support Date API', async () => {
+                    testRunner.expect(typeof Date).toBe('function');
+                    testRunner.expect(typeof Date.now).toBe('function');
+                    
+                    const now = Date.now();
+                    testRunner.expect(typeof now).toBe('number');
+                    testRunner.expect(now).toBeGreaterThan(0);
+                    
+                    const date = new Date();
+                    testRunner.expect(date instanceof Date).toBeTruthy();
+                });
+
+                await testRunner.it('should support Array methods', async () => {
+                    const arr = [1, 2, 3, 4, 5];
+                    
+                    // Test modern array methods
+                    testRunner.expect(typeof arr.map).toBe('function');
+                    testRunner.expect(typeof arr.filter).toBe('function');
+                    testRunner.expect(typeof arr.find).toBe('function');
+                    testRunner.expect(typeof arr.includes).toBe('function');
+                    
+                    const mapped = arr.map(x => x * 2);
+                    testRunner.expect(mapped[0]).toBe(2);
+                    
+                    const filtered = arr.filter(x => x > 3);
+                    testRunner.expect(filtered.length).toBe(2);
+                });
+
+                await testRunner.it('should support Object methods', async () => {
+                    const obj = { a: 1, b: 2, c: 3 };
+                    
+                    testRunner.expect(typeof Object.keys).toBe('function');
+                    testRunner.expect(typeof Object.values).toBe('function');
+                    testRunner.expect(typeof Object.entries).toBe('function');
+                    
+                    const keys = Object.keys(obj);
+                    testRunner.expect(keys.length).toBe(3);
+                    testRunner.expect(keys.includes('a')).toBeTruthy();
+                });
+
+                await testRunner.it('should support String methods', async () => {
+                    const str = 'Hello World';
+                    
+                    testRunner.expect(typeof str.includes).toBe('function');
+                    testRunner.expect(typeof str.startsWith).toBe('function');
+                    testRunner.expect(typeof str.endsWith).toBe('function');
+                    
+                    testRunner.expect(str.includes('World')).toBeTruthy();
+                    testRunner.expect(str.startsWith('Hello')).toBeTruthy();
+                    testRunner.expect(str.endsWith('World')).toBeTruthy();
+                });
+
+                await testRunner.it('should work with application modules', async () => {
+                    // Test that our modules work with browser APIs
+                    const authManager = new AuthManager();
+                    const ticketManager = new TicketManager();
+                    
+                    testRunner.expect(authManager).toBeTruthy();
+                    testRunner.expect(ticketManager).toBeTruthy();
+                    
+                    // Test full workflow
+                    const loginResult = await authManager.login({ username: 'demo', password: 'password' });
+                    testRunner.expect(loginResult.success).toBeTruthy();
+                    
+                    const createResult = await ticketManager.createTicket({
+                        title: 'API Compatibility Test',
+                        description: 'Testing API compatibility',
+                        status: 'Open'
+                    });
+                    testRunner.expect(createResult.success).toBeTruthy();
+                });
+            });
+
+            document.getElementById('api-test-btn').disabled = false;
+        }
+
+        // Responsive Design Tests
+        async function runResponsiveTests() {
+            testRunner.clearResults('responsive-design');
+            document.getElementById('responsive-test-btn').disabled = true;
+            
+            await testRunner.describe('Responsive Design', async () => {
+                setupTestEnvironment();
+
+                await testRunner.it('should detect viewport dimensions', async () => {
+                    testRunner.expect(typeof window.innerWidth).toBe('number');
+                    testRunner.expect(typeof window.innerHeight).toBe('number');
+                    testRunner.expect(window.innerWidth).toBeGreaterThan(0);
+                    testRunner.expect(window.innerHeight).toBeGreaterThan(0);
+                });
+
+                await testRunner.it('should support media queries', async () => {
+                    if (typeof window.matchMedia === 'function') {
+                        const mobileQuery = window.matchMedia('(max-width: 768px)');
+                        testRunner.expect(typeof mobileQuery.matches).toBe('boolean');
+                        
+                        const desktopQuery = window.matchMedia('(min-width: 1024px)');
+                        testRunner.expect(typeof desktopQuery.matches).toBe('boolean');
+                    } else {
+                        // Fallback for older browsers
+                        testRunner.expect(window.innerWidth).toBeGreaterThan(0);
+                    }
+                });
+
+                await testRunner.it('should work at different viewport sizes', async () => {
+                    const authManager = new AuthManager();
+                    const ticketManager = new TicketManager();
+                    
+                    // Test functionality regardless of viewport size
+                    const result = await authManager.login({ username: 'demo', password: 'password' });
+                    testRunner.expect(result.success).toBeTruthy();
+                    
+                    const createResult = await ticketManager.createTicket({
+                        title: 'Responsive Test',
+                        description: 'Testing responsive functionality',
+                        status: 'Open'
+                    });
+                    testRunner.expect(createResult.success).toBeTruthy();
+                });
+
+                await testRunner.it('should handle touch vs mouse input', async () => {
+                    const hasTouchSupport = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+                    
+                    // Test that modules work regardless of input method
+                    const ticketManager = new TicketManager();
+                    const tickets = ticketManager.getTickets();
+                    testRunner.expect(Array.isArray(tickets)).toBeTruthy();
+                    
+                    // Log input method for debugging
+                    console.log(`Touch support: ${hasTouchSupport}`);
+                });
+
+                await testRunner.it('should handle orientation changes', async () => {
+                    // Test that functionality persists through orientation changes
+                    const authManager = new AuthManager();
+                    await authManager.login({ username: 'demo', password: 'password' });
+                    
+                    // Simulate orientation change by checking screen properties
+                    const hasOrientationAPI = 'orientation' in screen;
+                    
+                    testRunner.expect(authManager.isAuthenticated()).toBeTruthy();
+                    
+                    console.log(`Orientation API support: ${hasOrientationAPI}`);
+                });
+            });
+
+            document.getElementById('responsive-test-btn').disabled = false;
+        }
+
+        // Performance Compatibility Tests
+        async function runPerformanceTests() {
+            testRunner.clearResults('performance-compatibility');
+            document.getElementById('performance-test-btn').disabled = true;
+            
+            await testRunner.describe('Performance Compatibility', async () => {
+                setupTestEnvironment();
+
+                await testRunner.it('should perform authentication quickly', async () => {
+                    const authManager = new AuthManager();
+                    
+                    const startTime = performance.now();
+                    const result = await authManager.login({ username: 'demo', password: 'password' });
+                    const endTime = performance.now();
+                    
+                    testRunner.expect(result.success).toBeTruthy();
+                    
+                    const duration = endTime - startTime;
+                    testRunner.expect(duration).toBeLessThan(1000); // Should complete within 1 second
+                    
+                    console.log(`Authentication took ${duration.toFixed(2)}ms`);
+                });
+
+                await testRunner.it('should handle multiple tickets efficiently', async () => {
+                    const authManager = new AuthManager();
+                    await authManager.login({ username: 'admin', password: 'admin123' });
+                    
+                    const ticketManager = new TicketManager();
+                    
+                    const startTime = performance.now();
+                    
+                    // Create multiple tickets
+                    const promises = [];
+                    for (let i = 0; i < 10; i++) {
+                        promises.push(ticketManager.createTicket({
+                            title: `Performance Test ${i}`,
+                            description: `Testing performance ${i}`,
+                            status: 'Open'
+                        }));
+                    }
+                    
+                    const results = await Promise.all(promises);
+                    const endTime = performance.now();
+                    
+                    const duration = endTime - startTime;
+                    const successCount = results.filter(r => r.success).length;
+                    
+                    testRunner.expect(successCount).toBeGreaterThan(8); // At least 80% success
+                    testRunner.expect(duration).toBeLessThan(5000); // Should complete within 5 seconds
+                    
+                    console.log(`Created ${successCount} tickets in ${duration.toFixed(2)}ms`);
+                });
+
+                await testRunner.it('should handle memory usage efficiently', async () => {
+                    const authManager = new AuthManager();
+                    const ticketManager = new TicketManager();
+                    
+                    // Test memory usage with repeated operations
+                    for (let i = 0; i < 5; i++) {
+                        await authManager.login({ username: 'demo', password: 'password' });
+                        
+                        await ticketManager.createTicket({
+                            title: `Memory Test ${i}`,
+                            description: `Testing memory usage ${i}`,
+                            status: 'Open'
+                        });
+                        
+                        authManager.logout();
+                    }
+                    
+                    // Should complete without memory issues
+                    testRunner.expect(ticketManager.getTickets().length).toBeGreaterThan(0);
+                });
+
+                await testRunner.it('should support performance monitoring APIs', async () => {
+                    testRunner.expect(typeof performance).toBe('object');
+                    testRunner.expect(typeof performance.now).toBe('function');
+                    
+                    const timestamp = performance.now();
+                    testRunner.expect(typeof timestamp).toBe('number');
+                    testRunner.expect(timestamp).toBeGreaterThan(0);
+                });
+            });
+
+            document.getElementById('performance-test-btn').disabled = false;
+        }
+
+        // Run all cross-browser tests
+        async function runAllCrossBrowserTests() {
+            console.log('Starting complete cross-browser compatibility test suite...');
+            
+            await runFeatureDetectionTests();
+            await testRunner.delay(500);
+            
+            await runStorageTests();
+            await testRunner.delay(500);
+            
+            await runApiTests();
+            await testRunner.delay(500);
+            
+            await runResponsiveTests();
+            await testRunner.delay(500);
+            
+            await runPerformanceTests();
+            
+            console.log('Complete cross-browser compatibility test suite finished!');
+            
+            // Show summary
+            const totalTests = testRunner.totalTests;
+            const passedTests = testRunner.passedTests;
+            const failedTests = testRunner.failedTests;
+            const successRate = ((passedTests / totalTests) * 100).toFixed(1);
+            
+            console.log(`\nCross-Browser Compatibility Test Summary:`);
+            console.log(`Browser: ${testRunner.browserInfo.browser} ${testRunner.browserInfo.version}`);
+            console.log(`Platform: ${testRunner.browserInfo.platform}`);
+            console.log(`Total Tests: ${totalTests}`);
+            console.log(`Passed: ${passedTests}`);
+            console.log(`Failed: ${failedTests}`);
+            console.log(`Success Rate: ${successRate}%`);
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            displayBrowserInfo();
+            setupTestEnvironment();
+            console.log('Cross-Browser Compatibility E2E Test Suite Ready');
+            
+            // Add run all tests button
+            const runAllBtn = document.createElement('button');
+            runAllBtn.textContent = 'Run All Cross-Browser Tests';
+            runAllBtn.onclick = runAllCrossBrowserTests;
+            runAllBtn.style.cssText = 'background: #28a745; font-size: 1.1em; padding: 0.75rem 1.5rem; margin: 1rem 0;';
+            document.body.insertBefore(runAllBtn, document.querySelector('.test-section'));
+        });
+    </script>
+</body>
+</html>

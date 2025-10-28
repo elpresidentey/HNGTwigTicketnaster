@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animation Performance Test</title>
+    <link rel="stylesheet" href="../public/assets/css/landing-redesign.css">
+    <link rel="stylesheet" href="../public/assets/css/progressive-enhancement.css">
+    <link rel="stylesheet" href="../public/assets/css/optimized-animations.css">
+    <link rel="stylesheet" href="../public/assets/css/cross-browser-animations.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+        
+        .test-description {
+            color: #6b7280;
+            margin-bottom: 2rem;
+        }
+        
+        .performance-metrics {
+            background: #f3f4f6;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .fps-counter {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            z-index: 1000;
+        }
+        
+        .browser-info {
+            background: #e5e7eb;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body class="landing-page">
+    <div class="fps-counter" id="fpsCounter">
+        FPS: <span id="fpsValue">--</span><br>
+        Frame Drops: <span id="frameDrops">0</span>
+    </div>
+
+    <div class="test-container">
+        <h1>Animation Performance Test Suite</h1>
+        
+        <div class="browser-info" id="browserInfo">
+            <strong>Browser:</strong> <span id="browserName"></span><br>
+            <strong>Device Memory:</strong> <span id="deviceMemory"></span><br>
+            <strong>Hardware Concurrency:</strong> <span id="hardwareConcurrency"></span><br>
+            <strong>WebGL Support:</strong> <span id="webglSupport"></span><br>
+            <strong>Reduced Motion:</strong> <span id="reducedMotion"></span>
+        </div>
+
+        <!-- Test 1: Decorative Circles Animation -->
+        <div class="test-section">
+            <h2 class="test-title">Test 1: Decorative Circles Animation</h2>
+            <p class="test-description">
+                Tests the performance of multiple floating circles with GPU acceleration.
+            </p>
+            
+            <div style="position: relative; height: 400px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; overflow: hidden;">
+                <div class="decorative-circles">
+                    <div class="decorative-circle decorative-circle-1"></div>
+                    <div class="decorative-circle decorative-circle-2"></div>
+                    <div class="decorative-circle decorative-circle-3"></div>
+                    <div class="decorative-circle decorative-circle-4"></div>
+                    <div class="decorative-circle decorative-circle-5"></div>
+                </div>
+            </div>
+            
+            <div class="performance-metrics" id="circleMetrics">
+                Animation Status: <span id="circleStatus">Running</span><br>
+                GPU Acceleration: <span id="gpuAcceleration">Checking...</span>
+            </div>
+        </div>
+
+        <!-- Test 2: Feature Box Hover Effects -->
+        <div class="test-section">
+            <h2 class="test-title">Test 2: Feature Box Hover Effects</h2>
+            <p class="test-description">
+                Tests hover animations with transform and box-shadow changes.
+            </p>
+            
+            <div class="test-grid">
+                <div class="feature-box">
+                    <div class="feature-box-header">
+                        <div class="feature-box-icon">🚀</div>
+                        <h3 class="feature-box-title">Performance Test</h3>
+                    </div>
+                    <div class="feature-box-content">
+                        <p class="feature-box-description">
+                            Hover over this box to test the animation performance.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="feature-box">
+                    <div class="feature-box-header">
+                        <div class="feature-box-icon">⚡</div>
+                        <h3 class="feature-box-title">GPU Acceleration</h3>
+                    </div>
+                    <div class="feature-box-content">
+                        <p class="feature-box-description">
+                            This box uses GPU-accelerated transforms.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="feature-box">
+                    <div class="feature-box-header">
+                        <div class="feature-box-icon">🎯</div>
+                        <h3 class="feature-box-title">Smooth Transitions</h3>
+                    </div>
+                    <div class="feature-box-content">
+                        <p class="feature-box-description">
+                            Optimized cubic-bezier timing functions.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test 3: CTA Button Animations -->
+        <div class="test-section">
+            <h2 class="test-title">Test 3: CTA Button Animations</h2>
+            <p class="test-description">
+                Tests button hover effects and shimmer animations.
+            </p>
+            
+            <div style="display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;">
+                <button class="cta-btn cta-primary cta-btn-xl">
+                    <span class="btn-text">Get Started</span>
+                    <span class="btn-icon">→</span>
+                </button>
+                
+                <button class="cta-btn cta-secondary cta-btn-xl">
+                    <span class="btn-text">Login</span>
+                    <span class="btn-icon">👤</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Test 4: Entrance Animations -->
+        <div class="test-section">
+            <h2 class="test-title">Test 4: Entrance Animations</h2>
+            <p class="test-description">
+                Tests staggered entrance animations with Intersection Observer.
+            </p>
+            
+            <button onclick="resetAnimations()" style="margin-bottom: 2rem; padding: 0.5rem 1rem; border: none; background: #3b82f6; color: white; border-radius: 6px; cursor: pointer;">
+                Reset Animations
+            </button>
+            
+            <div class="test-grid">
+                <div class="animate-on-scroll feature-box">
+                    <h3>Animation 1</h3>
+                    <p>This element animates when it comes into view.</p>
+                </div>
+                
+                <div class="animate-on-scroll feature-box">
+                    <h3>Animation 2</h3>
+                    <p>Staggered delay for natural movement.</p>
+                </div>
+                
+                <div class="animate-on-scroll feature-box">
+                    <h3>Animation 3</h3>
+                    <p>Optimized for performance across devices.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test 5: Browser Compatibility -->
+        <div class="test-section">
+            <h2 class="test-title">Test 5: Browser Compatibility</h2>
+            <p class="test-description">
+                Tests feature detection and progressive enhancement.
+            </p>
+            
+            <div class="performance-metrics" id="compatibilityMetrics">
+                <div>CSS Grid Support: <span id="gridSupport">Checking...</span></div>
+                <div>Flexbox Support: <span id="flexSupport">Checking...</span></div>
+                <div>Transform3D Support: <span id="transform3dSupport">Checking...</span></div>
+                <div>Backdrop Filter Support: <span id="backdropFilterSupport">Checking...</span></div>
+                <div>Clip Path Support: <span id="clipPathSupport">Checking...</span></div>
+                <div>CSS Custom Properties: <span id="customPropsSupport">Checking...</span></div>
+                <div>Intersection Observer: <span id="intersectionObserverSupport">Checking...</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../public/assets/js/animation-performance.js"></script>
+    <script>
+        // FPS Counter
+        let fps = 0;
+        let frameCount = 0;
+        let lastTime = performance.now();
+        let frameDrops = 0;
+
+        function updateFPS() {
+            frameCount++;
+            const currentTime = performance.now();
+            
+            if (currentTime - lastTime >= 1000) {
+                fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
+                
+                if (fps < 50) {
+                    frameDrops++;
+                }
+                
+                document.getElementById('fpsValue').textContent = fps;
+                document.getElementById('frameDrops').textContent = frameDrops;
+                
+                frameCount = 0;
+                lastTime = currentTime;
+            }
+            
+            requestAnimationFrame(updateFPS);
+        }
+        
+        updateFPS();
+
+        // Browser Information
+        function updateBrowserInfo() {
+            document.getElementById('browserName').textContent = navigator.userAgent.split(' ').pop();
+            document.getElementById('deviceMemory').textContent = navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'Unknown';
+            document.getElementById('hardwareConcurrency').textContent = navigator.hardwareConcurrency || 'Unknown';
+            
+            // WebGL Support
+            const canvas = document.createElement('canvas');
+            const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+            document.getElementById('webglSupport').textContent = gl ? 'Yes' : 'No';
+            
+            // Reduced Motion
+            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            document.getElementById('reducedMotion').textContent = reducedMotion ? 'Yes' : 'No';
+        }
+
+        // Feature Detection
+        function checkFeatureSupport() {
+            const features = {
+                gridSupport: CSS.supports('display', 'grid'),
+                flexSupport: CSS.supports('display', 'flex'),
+                transform3dSupport: CSS.supports('transform', 'translate3d(0, 0, 0)'),
+                backdropFilterSupport: CSS.supports('backdrop-filter', 'blur(10px)'),
+                clipPathSupport: CSS.supports('clip-path', 'polygon(0 0, 100% 0, 100% 85%, 0 100%)'),
+                customPropsSupport: CSS.supports('color', 'var(--test)'),
+                intersectionObserverSupport: 'IntersectionObserver' in window
+            };
+
+            Object.keys(features).forEach(feature => {
+                const element = document.getElementById(feature);
+                if (element) {
+                    element.textContent = features[feature] ? 'Yes' : 'No';
+                    element.style.color = features[feature] ? 'green' : 'red';
+                }
+            });
+        }
+
+        // GPU Acceleration Check
+        function checkGPUAcceleration() {
+            const circle = document.querySelector('.decorative-circle');
+            if (circle) {
+                const computedStyle = window.getComputedStyle(circle);
+                const transform = computedStyle.transform;
+                const willChange = computedStyle.willChange;
+                
+                const hasGPU = transform !== 'none' || willChange === 'transform';
+                document.getElementById('gpuAcceleration').textContent = hasGPU ? 'Enabled' : 'Disabled';
+                document.getElementById('gpuAcceleration').style.color = hasGPU ? 'green' : 'orange';
+            }
+        }
+
+        // Reset Animations
+        function resetAnimations() {
+            const elements = document.querySelectorAll('.animate-on-scroll');
+            elements.forEach(el => {
+                el.classList.remove('in-view');
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+            });
+            
+            setTimeout(() => {
+                elements.forEach((el, index) => {
+                    setTimeout(() => {
+                        el.classList.add('in-view');
+                    }, index * 200);
+                });
+            }, 100);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateBrowserInfo();
+            checkFeatureSupport();
+            
+            setTimeout(() => {
+                checkGPUAcceleration();
+            }, 1000);
+            
+            // Monitor animation status
+            const circles = document.querySelectorAll('.decorative-circle');
+            if (circles.length > 0) {
+                const observer = new MutationObserver(() => {
+                    const isAnimating = circles[0].style.animationPlayState !== 'paused';
+                    document.getElementById('circleStatus').textContent = isAnimating ? 'Running' : 'Paused';
+                });
+                
+                circles.forEach(circle => {
+                    observer.observe(circle, { attributes: true, attributeFilter: ['style'] });
+                });
+            }
+        });
+
+        // Performance monitoring
+        setInterval(() => {
+            if (window.animationManager) {
+                const metrics = window.animationManager.getPerformanceMetrics();
+                console.log('Performance Metrics:', metrics);
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

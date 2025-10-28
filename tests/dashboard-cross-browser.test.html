@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Redesign Cross-Browser Compatibility Tests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 2rem 0;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+        }
+        .test-result {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border-radius: 0.25rem;
+        }
+        .pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            margin: 0.5rem;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .browser-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .summary {
+            background: #e7f3ff;
+            border: 2px solid #007bff;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        .summary h2 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dashboard Redesign Cross-Browser Compatibility Tests</h1>
+    <p>This test suite validates the dashboard redesign across Chrome, Firefox, Safari, and Edge.</p>
+
+    <div class="browser-info">
+        <h2>Current Browser Information</h2>
+        <div id="browser-details"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>1. Backdrop-Filter Support Tests</h2>
+        <button onclick="runBackdropFilterTests()" id="backdrop-test-btn">Run Backdrop-Filter Tests</button>
+        <div id="backdrop-filter-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Gradient Rendering Tests</h2>
+        <button onclick="runGradientTests()" id="gradient-test-btn">Run Gradient Tests</button>
+        <div id="gradient-rendering-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Animation Performance Tests</h2>
+        <button onclick="runAnimationTests()" id="animation-test-btn">Run Animation Tests</button>
+        <div id="animation-performance-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Glass Morphism Effects Tests</h2>
+        <button onclick="runGlassMorphismTests()" id="glass-test-btn">Run Glass Morphism Tests</button>
+        <div id="glass-morphism-effects-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Run All Tests</h2>
+        <button onclick="runAllTests()" id="all-tests-btn">Run All Tests</button>
+    </div>
+
+    <div id="summary" class="summary" style="display: none;">
+        <h2>Test Summary</h2>
+        <div id="summary-content"></div>
+    </div>
+
+    <script>
+        // Test framework
+        class DashboardTestRunner {
+            constructor() {
+                this.results = [];
+                this.currentSuite = '';
+                this.totalTests = 0;
+                this.passedTests = 0;
+                this.failedTests = 0;
+                this.warningTests = 0;
+                this.browserInfo = this.detectBrowser();
+            }
+
+            detectBrowser() {
+                const userAgent = navigator.userAgent;
+                const vendor = navigator.vendor;
+                
+                let browser = 'Unknown';
+                let version = 'Unknown';
+                let engine = 'Unknown';
+                
+                if (userAgent.includes('Chrome') && vendor.includes('Google')) {
+                    browser = 'Chrome';
+                    engine = 'Blink';
+                    const match = userAgent.match(/Chrome\/(\d+)/);
+                    version = match ? match[1] : 'Unknown';
+                } else if (userAgent.includes('Firefox')) {
+                    browser = 'Firefox';
+                    engine = 'Gecko';
+                    const match = userAgent.match(/Firefox\/(\d+)/);
+                    version = match ? match[1] : 'Unknown';
+                } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+                    browser = 'Safari';
+                    engine = 'WebKit';
+                    const match = userAgent.match(/Version\/(\d+)/);
+                    version = match ? match[1] : 'Unknown';
+                } else if (userAgent.includes('Edg')) {
+                    browser = 'Edge';
+                    engine = 'Blink';
+                    const match = userAgent.match(/Edg\/(\d+)/);
+                    version = match ? match[1] : 'Unknown';
+                }
+                
+                return {
+                    browser,
+                    version,
+                    engine,
+                    userAgent,
+                    platform: navigator.platform,
+                    language: navigator.language,
+                    hardwareConcurrency: navigator.hardwareConcurrency || 'Unknown',
+                    maxTouchPoints: navigator.maxTouchPoints || 0
+                };
+            }
+
+            describe(suiteName, testFn) {
+                this.currentSuite = suiteName;
+                console.log(`\n=== ${suiteName} ===`);
+                return testFn();
+            }
+
+            async it(testName, testFn) {
+                this.totalTests++;
+                try {
+                    await testFn();
+                    this.results.push({ suite: this.currentSuite, name: testName, status: 'pass' });
+                    this.passedTests++;
+                    this.logResult(this.currentSuite.toLowerCase().replace(/\s+/g, '-'), `✓ ${testName}`, 'pass');
+                } catch (error) {
+                    if (error.message.includes('WARNING')) {
+                        this.results.push({ 
+                            suite: this.currentSuite, 
+                            name: testName, 
+                            status: 'warning', 
+                            error: error.message 
+                        });
+                        this.warningTests++;
+                        this.logResult(this.currentSuite.toLowerCase().replace(/\s+/g, '-'), `⚠ ${testName}: ${error.message}`, 'warning');
+                    } else {
+                        this.results.push({ 
+                            suite: this.currentSuite, 
+                            name: testName, 
+                            status: 'fail', 
+                            error: error.message 
+                        });
+                        this.failedTests++;
+                        this.logResult(this.currentSuite.toLowerCase().replace(/\s+/g, '-'), `✗ ${testName}: ${error.message}`, 'fail');
+                    }
+                }
+            }
+
+            expect(actual) {
+                return {
+                    toBe: (expected) => {
+                        if (actual !== expected) {
+                            throw new Error(`Expected ${expected}, but got ${actual}`);
+                        }
+                    },
+                    toBeTruthy: () => {
+                        if (!actual) {
+                            throw new Error(`Expected truthy value, but got ${actual}`);
+                        }
+                    },
+                    toBeFalsy: () => {
+                        if (actual) {
+                            throw new Error(`Expected falsy value, but got ${actual}`);
+                        }
+                    },
+                    toContain: (expected) => {
+                        if (typeof actual === 'string' && !actual.includes(expected)) {
+                            throw new Error(`Expected "${actual}" to contain "${expected}"`);
+                        }
+                    },
+                    toBeGreaterThan: (expected) => {
+                        if (actual <= expected) {
+                            throw new Error(`Expected ${actual} to be greater than ${expected}`);
+                        }
+                    },
+                    toBeLessThan: (expected) => {
+                        if (actual >= expected) {
+                            throw new Error(`Expected ${actual} to be less than ${expected}`);
+                        }
+                    }
+                };
+            }
+
+            logResult(containerId, message, type = 'info') {
+                const container = document.getElementById(`${containerId}-results`);
+                if (!container) return;
+                
+                const result = document.createElement('div');
+                result.className = `test-result ${type}`;
+                result.textContent = message;
+                container.appendChild(result);
+            }
+
+            clearResults(containerId) {
+                const container = document.getElementById(`${containerId}-results`);
+                if (container) {
+                    container.innerHTML = '';
+                }
+            }
+
+            async delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            // CSS feature detection helper
+            supportsCSS(property, value) {
+                const element = document.createElement('div');
+                element.style[property] = value;
+                return element.style[property] !== '';
+            }
+
+            // CSS @supports detection
+            supportsCSSSyntax(declaration) {
+                return CSS && CSS.supports && CSS.supports(declaration);
+            }
+
+            showSummary() {
+                const summaryDiv = document.getElementById('summary');
+                const summaryContent = document.getElementById('summary-content');
+                
+                const passRate = ((this.passedTests / this.totalTests) * 100).toFixed(1);
+                
+                summaryContent.innerHTML = `
+                    <p><strong>Total Tests:</strong> ${this.totalTests}</p>
+                    <p><strong>Passed:</strong> ${this.passedTests}</p>
+                    <p><strong>Failed:</strong> ${this.failedTests}</p>
+                    <p><strong>Warnings:</strong> ${this.warningTests}</p>
+                    <p><strong>Pass Rate:</strong> ${passRate}%</p>
+                    <p><strong>Browser:</strong> ${this.browserInfo.browser} ${this.browserInfo.version} (${this.browserInfo.engine})</p>
+                `;
+                
+                summaryDiv.style.display = 'block';
+            }
+        }
+
+        const testRunner = new DashboardTestRunner();
+
+        // Display browser information
+        function displayBrowserInfo() {
+            const browserDetails = document.getElementById('browser-details');
+            const info = testRunner.browserInfo;
+            
+            browserDetails.innerHTML = `
+                <p><strong>Browser:</strong> ${info.browser} ${info.version}</p>
+                <p><strong>Engine:</strong> ${info.engine}</p>
+                <p><strong>Platform:</strong> ${info.platform}</p>
+                <p><strong>Language:</strong> ${info.language}</p>
+                <p><strong>Hardware Concurrency:</strong> ${info.hardwareConcurrency}</p>
+                <p><strong>Max Touch Points:</strong> ${info.maxTouchPoints}</p>
+                <p><strong>User Agent:</strong> ${info.userAgent}</p>
+            `;
+        }
+
+        // 1. Backdrop-Filter Support Tests
+        async function runBackdropFilterTests() {
+            testRunner.clearResults('backdrop-filter');
+            document.getElementById('backdrop-test-btn').disabled = true;
+            
+            await testRunner.describe('Backdrop-Filter Support', async () => {
+                await testRunner.it('should support backdrop-filter CSS property', async () => {
+                    const supportsBackdropFilter = testRunner.supportsCSSSyntax('backdrop-filter: blur(10px)');
+                    
+                    if (supportsBackdropFilter) {
+                        testRunner.expect(supportsBackdropFilter).toBeTruthy();
+                        testRunner.logResult('backdrop-filter', 'ℹ backdrop-filter is fully supported', 'info');
+                    } else {
+                        testRunner.logResult('backdrop-filter', 'WARNING: backdrop-filter not supported - fallback to solid backgrounds', 'warning');
+                        throw new Error('WARNING: backdrop-filter not supported');
+                    }
+                });
+
+                await testRunner.it('should apply backdrop-filter to glass morphism elements', async () => {
+                    const testElement = document.createElement('div');
+                    testElement.style.cssText = `
+                        background: rgba(255, 255, 255, 0.15);
+                        backdrop-filter: blur(20px);
+                        -webkit-backdrop-filter: blur(20px);
+                        width: 100px;
+                        height: 100px;
+                    `;
+                    
+                    document.body.appendChild(testElement);
+                    
+                    const computedStyle = window.getComputedStyle(testElement);
+                    const hasBackdropFilter = computedStyle.backdropFilter !== 'none' || 
+                                             computedStyle.webkitBackdropFilter !== 'none';
+                    
+                    document.body.removeChild(testElement);
+                    
+                    if (!hasBackdropFilter) {
+                        testRunner.logResult('backdrop-filter', 'WARNING: backdrop-filter not applied - using fallback', 'warning');
+                        throw new Error('WARNING: backdrop-filter not applied');
+                    }
+                    
+                    testRunner.expect(true).toBeTruthy();
+                });
+
+                await testRunner.it('should handle fallback for unsupported backdrop-filter', async () => {
+                    const testElement = document.createElement('div');
+                    testElement.style.cssText = `
+                        background: rgba(255, 255, 255, 0.95);
+                        backdrop-filter: blur(20px);
+                        width: 100px;
+                        height: 100px;
+                    `;
+                    
+                    document.body.appendChild(testElement);
+                    
+                    const computedStyle = window.getComputedStyle(testElement);
+                    // Should have background even if backdrop-filter fails
+                    testRunner.expect(computedStyle.background).toContain('rgba');
+                    
+                    document.body.removeChild(testElement);
+                });
+            });
+
+            document.getElementById('backdrop-test-btn').disabled = false;
+        }
+
+        // 2. Gradient Rendering Tests
+        async function runGradientTests() {
+            testRunner.clearResults('gradient-rendering');
+            document.getElementById('gradient-test-btn').disabled = true;
+            
+            await testRunner.describe('Gradient Rendering', async () => {
+                await testRunner.it('should support linear gradients', async () => {
+                    const supportsLinearGradient = testRunner.supportsCSSSyntax(
+                        'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                    );
+                    testRunner.expect(supportsLinearGradient).toBeTruthy();
+                });
+
+                await testRunner.it('should render dashboard gradient background', async () => {
+                    const testElement = document.createElement('div');
+                    testElement.style.cssText = `
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        width: 100px;
+                        height: 100px;
+                    `;
+                    
+                    document.body.appendChild(testElement);
+                    
+                    const computedStyle = window.getComputedStyle(testElement);
+                    testRunner.expect(computedStyle.background).toContain('gradient');
+                    
+                    document.body.removeChild(testElement);
+                });
+
+                await testRunner.it('should support radial gradients for overlay', async () => {
+                    const supportsRadialGradient = testRunner.supportsCSSSyntax(
+                        'background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%)'
+                    );
+                    testRunner.expect(supportsRadialGradient).toBeTruthy();
+                });
+
+                await testRunner.it('should render multiple gradient layers', async () => {
+                    const testElement = document.createElement('div');
+                    testElement.style.cssText = `
+                        background: 
+                            radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                            radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                            linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        width: 100px;
+                        height: 100px;
+                    `;
+                    
+                    document.body.appendChild(testElement);
+                    
+                    const computedStyle = window.getComputedStyle(testElement);
+                    testRunner.expect(computedStyle.background).toContain('gradient');
+                    
+                    document.body.removeChild(testElement);
+                });
+
+                await testRunner.it('should support gradient on pseudo-elements', async () => {
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        .test-gradient::before {
+                            content: '';
+                            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+                        }
+                    `;
+                    document.head.appendChild(style);
+                    
+                    const testElement = document.createElement('div');
+                    testElement.className = 'test-gradient';
+                    document.body.appendChild(testElement);
+                    
+                    const beforeStyle = window.getComputedStyle(testElement, '::before');
+                    testRunner.expect(beforeStyle.content).toBe('""');
+                    
+                    document.body.removeChild(testElement);
+                    document.head.removeChild(style);
+                });
+            });
+
+            document.getElementById('gradient-test-btn').disabled = false;
+        }
+
+        // 3. Animation Performance Tests
+        async function runAnimationTests() {
+            testRunner.clearResults('animation-performance');
+            document.getElementById('animation-test-btn').disabled = true;
+            
+            await testRunner.describe('Animation Performance', async () => {
+                await testRunner.it('should support CSS transforms', async () => {
+                    const supportsTransform = testRunner.supportsCSSSyntax('transform: translateY(-4px) scale(1.02)');
+                    testRunner.expect(supportsTransform).toBeTruthy();
+                });
+
+                await testRunner.it('should support CSS transitions', async () => {
+                    const supportsTransition = testRunner.supportsCSSSyntax('transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1)');
+                    testRunner.expect(supportsTransition).toBeTruthy();
+                });
+
+                await testRunner.it('should support CSS animations', async () => {
+                    const supportsAnimation = testRunner.supportsCSSSyntax('animation: fadeInUp 0.6s ease forwards');
+                    testRunner.expect(supportsAnimation).toBeTruthy();
+                });
+
+                await testRunner.it('should perform hover animations smoothly', async () => {
+                    const testElement = document.createElement('div');
+                    testElement.style.cssText = `
+                        width: 100px;
+                        height: 100px;
+                        background: white;
+                        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    `;
+                    
+                    document.body.appendChild(testElement);
+                    
+                    const startTime = performance.now();
+                    testElement.style.transform = 'translateY(-4px) scale(1.02)';
+                    
+                    await testRunner.delay(50);
+                    
+                    const computedStyle = window.getComputedStyle(testElement);
+                    testRunner.expect(computedStyle.transform).toContain('matrix');
+                    
+                    const endTime = performance.now();
+                    const duration = endTime - startTime;
+                    
+                    testRunner.logResult('animation-performance', `ℹ Transform applied in ${duration.toFixed(2)}ms`, 'info');
+                    
+                    document.body.removeChild(testElement);
+                });
+
+                await testRunner.it('should support keyframe animations', async () => {
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        @keyframes testFadeIn {
+                            from { opacity: 0; transform: translateY(30px); }
+                            to { opacity: 1; transform: translateY(0); }
+                        }
+                        .test-fade { animation: testFadeIn 0.6s ease forwards; }
+                    `;
+                    document.head.appendChild(style);
+                    
+                    const testElement = document.createElement('div');
+                    testElement.className = 'test-fade';
+                    testElement.style.cssText = 'width: 100px; height: 100px; opacity: 0;';
+                    
+                    document.body.appendChild(testElement);
+                    
+                    await testRunner.delay(100);
+                    
+                    const computedStyle = window.getComputedStyle(testElement);
+                    testRunner.expect(computedStyle.animationName).toBe('testFadeIn');
+                    
+                    document.body.removeChild(testElement);
+                    document.head.removeChild(style);
+                });
+
+                await testRunner.it('should respect prefers-reduced-motion', async () => {
+                    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    
+                    testRunner.logResult('animation-performance', 
+                        `ℹ Prefers reduced motion: ${prefersReducedMotion}`, 'info');
+                    
+                    testRunner.expect(typeof prefersReducedMotion).toBe('boolean');
+                });
+
+                await testRunner.it('should measure animation frame rate', async () => {
+                    let frameCount = 0;
+                    let lastTime = performance.now();
+                    const duration = 1000; // 1 second
+                    
+                    const countFrames = (currentTime) => {
+                        frameCount++;
+                        if (currentTime - lastTime < duration) {
+                            requestAnimationFrame(countFrames);
+                        }
+                    };
+                    
+                    requestAnimationFrame(countFrames);
+                    await testRunner.delay(duration);
+                    
+                    const fps = frameCount;
+                    testRunner.logResult('animation-performance', 
+                        `ℹ Approximate FPS: ${fps}`, 'info');
+                    
+                    // Should achieve at least 30 FPS
+                    testRunner.expect(fps).toBeGreaterThan(30);
+                });
+            });
+
+            document.getElementById('animation-test-btn').disabled = false;
+        }
+
+        // 4. Glass Morphism Effects Tests
+        async function runGlassMorphismTests() {
+            testRunner.clearResults('glass-morphism-effects');
+            document.getElementById('glass-test-btn').disabled = true;
+            
+            await testRunner.describe('Glass Morphism Effects', async () => {
+                await testRunner.it('should support RGBA colors', async () => {
+                    const supportsRGBA = testRunner.supportsCSSSyntax('background: rgba(255, 255, 255, 0.15)');
+                    testRunner.expect(supportsRGBA).toBeTruthy();
+                });
+
+                await testRunner.it('should render semi-transparent backgrounds', async () => {
+                    const testElement = document.createElement('div');
+                    testElement.style.cssText = `
+                        background: rgba(255, 255, 255, 0.95);
+                        width: 100px;
+                        height: 100px;
+                    `;
+                    
+                    document.body.appendChild(testElement);
+                    
+                    const computedStyle = window.getComputedStyle(testElement);
+                    testRunner.expect(computedStyle.background).toContain('rgba');
+                    
+                    document.body.removeChild(testElement);
+                });
+
+                await testRunner.it('should support box-shadow for depth', async () => {
+                    const supportsBoxShadow = testRunner.supportsCSSSyntax(
+                        'box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.2)'
+                    );
+                    testRunner.expect(supportsBoxShadow).toBeTruthy();
+                });
+
+                await testRunner.it('should render multiple box-shadows', async () => {
+                    const testElement = document.createElement('div');
+                    testElement.style.cssText = `
+                        box-shadow: 
+                            0 8px 32px rgba(0, 0, 0, 0.12),
+                            0 0 0 1px rgba(255, 255, 255, 0.2),
+                            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+                        width: 100px;
+                        height: 100px;
+                    `;
+                    
+                    document.body.appendChild(testElement);
+                    
+                    const computedStyle = window.getComputedStyle(testElement);
+                    testRunner.expect(computedStyle.boxShadow).toContain('rgba');
+                    
+                    document.body.removeChild(testElement);
+                });
+
+                await testRunner.it('should support border-radius for rounded corners', async () => {
+                    const supportsBorderRadius = testRunner.supportsCSSSyntax('border-radius: 1.5rem');
+                    testRunner.expect(supportsBorderRadius).toBeTruthy();
+                });
+
+                await testRunner.it('should render glass morphism card', async () => {
+                    const testElement = document.createElement('div');
+                    testElement.style.cssText = `
+                        background: rgba(255, 255, 255, 0.95);
+                        backdrop-filter: blur(20px);
+                        -webkit-backdrop-filter: blur(20px);
+                        border-radius: 1.5rem;
+                        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+                        border: 1px solid rgba(255, 255, 255, 0.2);
+                        padding: 2rem;
+                        width: 200px;
+                        height: 150px;
+                    `;
+                    
+                    document.body.appendChild(testElement);
+                    
+                    const computedStyle = window.getComputedStyle(testElement);
+                    testRunner.expect(computedStyle.background).toContain('rgba');
+                    testRunner.expect(computedStyle.borderRadius).toContain('24px');
+                    
+                    document.body.removeChild(testElement);
+                });
+
+                await testRunner.it('should support CSS custom properties', async () => {
+                    const supportsCustomProps = testRunner.supportsCSSSyntax('--test-var: rgba(255, 255, 255, 0.15)');
+                    testRunner.expect(supportsCustomProps).toBeTruthy();
+                });
+            });
+
+            document.getElementById('glass-test-btn').disabled = false;
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            document.getElementById('all-tests-btn').disabled = true;
+            document.getElementById('summary').style.display = 'none';
+            
+            // Reset counters
+            testRunner.totalTests = 0;
+            testRunner.passedTests = 0;
+            testRunner.failedTests = 0;
+            testRunner.warningTests = 0;
+            testRunner.results = [];
+            
+            await runBackdropFilterTests();
+            await testRunner.delay(500);
+            
+            await runGradientTests();
+            await testRunner.delay(500);
+            
+            await runAnimationTests();
+            await testRunner.delay(500);
+            
+            await runGlassMorphismTests();
+            
+            testRunner.showSummary();
+            document.getElementById('all-tests-btn').disabled = false;
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            displayBrowserInfo();
+        });
+    </script>
+</body>
+</html>

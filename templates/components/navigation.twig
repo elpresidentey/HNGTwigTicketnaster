@@ -1,0 +1,204 @@
+{# Navigation component with responsive design and conditional rendering #}
+<nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="navbar-container">
+        {# Logo and brand #}
+        <div class="navbar-brand">
+            <a href="/" class="brand-link" aria-label="Ticket Management App - Home">
+                <svg class="brand-logo" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <rect width="32" height="32" rx="8" fill="#3B82F6"/>
+                    <path d="M8 12h16v2H8v-2zm0 4h16v2H8v-2zm0 4h12v2H8v-2z" fill="white"/>
+                </svg>
+                <span class="brand-text">TicketApp</span>
+            </a>
+        </div>
+        
+        {# Mobile menu toggle button #}
+        <button 
+            class="mobile-menu-toggle" 
+            type="button" 
+            aria-expanded="false" 
+            aria-controls="navbar-menu"
+            aria-label="Toggle navigation menu"
+            id="mobile-menu-btn"
+        >
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+        
+        {# Navigation menu #}
+        <div class="navbar-menu" id="navbar-menu">
+            <ul class="navbar-nav" role="menubar">
+                {# Check if user is authenticated (simulated with session check) #}
+                {% set isAuthenticated = app.session is defined and app.session.get('user_id') %}
+                
+                {% if isAuthenticated %}
+                    {# Authenticated user navigation #}
+                    <li class="nav-item" role="none">
+                        <a href="/dashboard" class="nav-link" role="menuitem">
+                            <svg class="nav-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                                <path d="M8 1L3 6v9h10V6L8 1zM7 14H5V9h2v5zm4 0H9V9h2v5zm1-6H4V6.5L8 3l4 3.5V8z"/>
+                            </svg>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item" role="none">
+                        <a href="/tickets" class="nav-link" role="menuitem">
+                            <svg class="nav-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                                <path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1zm1 2v8h8V4H4zm1 1h6v1H5V5zm0 2h6v1H5V7zm0 2h4v1H5V9z"/>
+                            </svg>
+                            My Tickets
+                        </a>
+                    </li>
+                    <li class="nav-item nav-item-dropdown" role="none">
+                        <button 
+                            class="nav-link nav-dropdown-toggle" 
+                            type="button"
+                            aria-expanded="false"
+                            aria-haspopup="true"
+                            aria-controls="user-dropdown"
+                            role="menuitem"
+                            id="user-menu-btn"
+                        >
+                            <svg class="nav-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                                <path d="M8 8a3 3 0 100-6 3 3 0 000 6zm2-3a2 2 0 11-4 0 2 2 0 014 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+                            </svg>
+                            Account
+                            <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
+                                <path d="M6 8L2 4h8L6 8z"/>
+                            </svg>
+                        </button>
+                        <ul class="nav-dropdown" id="user-dropdown" role="menu" aria-labelledby="user-menu-btn">
+                            <li role="none">
+                                <a href="/profile" class="dropdown-link" role="menuitem">Profile Settings</a>
+                            </li>
+                            <li role="none">
+                                <button type="button" class="dropdown-link logout-btn" role="menuitem" id="logout-btn">
+                                    Sign Out
+                                </button>
+                            </li>
+                        </ul>
+                    </li>
+                {% else %}
+                    {# Guest user navigation #}
+                    <li class="nav-item" role="none">
+                        <a href="/" class="nav-link" role="menuitem">Home</a>
+                    </li>
+                    <li class="nav-item" role="none">
+                        <a href="/auth/login" class="nav-link" role="menuitem">Sign In</a>
+                    </li>
+                    <li class="nav-item" role="none">
+                        <a href="/auth/signup" class="nav-link nav-link-primary" role="menuitem">Get Started</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+{# JavaScript for mobile menu and dropdown functionality #}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mobile menu toggle
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const navbarMenu = document.getElementById('navbar-menu');
+    
+    if (mobileMenuBtn && navbarMenu) {
+        mobileMenuBtn.addEventListener('click', function() {
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            this.setAttribute('aria-expanded', !isExpanded);
+            navbarMenu.classList.toggle('navbar-menu-open');
+            
+            // Toggle hamburger animation
+            this.classList.toggle('mobile-menu-toggle-active');
+        });
+    }
+    
+    // User dropdown toggle
+    const userMenuBtn = document.getElementById('user-menu-btn');
+    const userDropdown = document.getElementById('user-dropdown');
+    
+    if (userMenuBtn && userDropdown) {
+        userMenuBtn.addEventListener('click', function() {
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            this.setAttribute('aria-expanded', !isExpanded);
+            userDropdown.classList.toggle('nav-dropdown-open');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!userMenuBtn.contains(event.target) && !userDropdown.contains(event.target)) {
+                userMenuBtn.setAttribute('aria-expanded', 'false');
+                userDropdown.classList.remove('nav-dropdown-open');
+            }
+        });
+    }
+    
+    // Logout functionality (will be enhanced by auth.js)
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+            // This will be handled by the AuthManager when implemented
+            if (window.AuthManager) {
+                window.AuthManager.logout();
+            } else {
+                // Fallback for when JavaScript modules aren't loaded
+                window.location.href = '/auth/login';
+            }
+        });
+    }
+    
+    // Close mobile menu when clicking on nav links
+    const navLinks = navbarMenu.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth < 768) { // Mobile breakpoint
+                mobileMenuBtn.setAttribute('aria-expanded', 'false');
+                navbarMenu.classList.remove('navbar-menu-open');
+                mobileMenuBtn.classList.remove('mobile-menu-toggle-active');
+            }
+        });
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth >= 768) { // Desktop breakpoint
+            // Reset mobile menu state on desktop
+            mobileMenuBtn.setAttribute('aria-expanded', 'false');
+            navbarMenu.classList.remove('navbar-menu-open');
+            mobileMenuBtn.classList.remove('mobile-menu-toggle-active');
+        }
+    });
+    
+    // Highlight active navigation link based on current page
+    function highlightActiveNavLink() {
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('.nav-link');
+        
+        navLinks.forEach(link => {
+            // Remove active class from all links first
+            link.classList.remove('active');
+            
+            // Get the href attribute
+            const href = link.getAttribute('href');
+            
+            // Check if this link matches the current path
+            if (href === currentPath) {
+                link.classList.add('active');
+            }
+            // Special case for root path - only match exact '/'
+            else if (currentPath === '/' && href === '/') {
+                link.classList.add('active');
+            }
+            // For other paths, check if current path starts with the link href
+            // but only if href is not '/' to avoid matching everything
+            else if (href !== '/' && currentPath.startsWith(href)) {
+                link.classList.add('active');
+            }
+        });
+    }
+    
+    // Call on page load
+    highlightActiveNavLink();
+});
+</script>

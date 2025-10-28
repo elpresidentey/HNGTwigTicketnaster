@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tickets Dashboard Responsive Test</title>
+    <link rel="stylesheet" href="../public/assets/css/tickets-dashboard.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        .test-header {
+            background: #1a1a1a;
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .test-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .viewport-info {
+            font-size: 0.875rem;
+        }
+        
+        .test-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .test-btn {
+            padding: 0.5rem 1rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        
+        .test-btn:hover {
+            background: #2563eb;
+        }
+        
+        .breakpoint-indicator {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            z-index: 1000;
+        }
+        
+        .test-results {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-section h3 {
+            margin-top: 0;
+            color: #1a1a1a;
+        }
+        
+        .test-result {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border-radius: 4px;
+        }
+        
+        .test-result.pass {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .test-result.fail {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <div class="test-info">
+            <h1 style="margin: 0; font-size: 1.25rem;">Tickets Dashboard Responsive Test</h1>
+            <div class="viewport-info">
+                Viewport: <span id="viewportWidth">0</span>px × <span id="viewportHeight">0</span>px
+            </div>
+            <div class="test-controls">
+                <button class="test-btn" onclick="runTests()">Run Tests</button>
+                <button class="test-btn" onclick="location.reload()">Reload</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="breakpoint-indicator" id="breakpointIndicator">
+        Loading...
+    </div>
+
+    <!-- Actual Tickets Dashboard -->
+    <div class="tickets-dashboard-container">
+        <div class="page-header">
+            <h1 class="welcome-message">Welcome back, Test User!</h1>
+            <p class="page-description">Here's an overview of your ticket management system.</p>
+        </div>
+
+        <div class="stats-section">
+            <h2 class="sr-only">Ticket Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-total">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Total Tickets</div>
+                        <div class="stat-value" id="totalCount">12</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-open">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="white">
+                            <circle cx="8" cy="8" r="4"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Open Tickets</div>
+                        <div class="stat-value" id="openCount">5</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-progress">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="white">
+                            <circle cx="8" cy="8" r="4"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">In Progress</div>
+                        <div class="stat-value" id="inProgressCount">4</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-closed">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="white">
+                            <circle cx="8" cy="8" r="4"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Closed Tickets</div>
+                        <div class="stat-value" id="closedCount">3</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <h2 class="section-title">Quick Actions</h2>
+            <div class="action-buttons">
+                <button class="action-btn primary" id="createTicketBtn">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+                    </svg>
+                    Create New Ticket
+                </button>
+                <button class="action-btn secondary" id="viewAllTicketsBtn">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    View All Tickets
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Results Section -->
+    <div class="test-results" id="testResults" style="display: none;">
+        <div class="test-section">
+            <h3>Responsive Breakpoint Tests</h3>
+            <div id="breakpointTests"></div>
+        </div>
+        <div class="test-section">
+            <h3>Layout Tests</h3>
+            <div id="layoutTests"></div>
+        </div>
+        <div class="test-section">
+            <h3>Typography Tests</h3>
+            <div id="typographyTests"></div>
+        </div>
+        <div class="test-section">
+            <h3>Touch Target Tests</h3>
+            <div id="touchTargetTests"></div>
+        </div>
+    </div>
+
+    <script>
+        // Update viewport info
+        function updateViewportInfo() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            document.getElementById('viewportWidth').textContent = width;
+            document.getElementById('viewportHeight').textContent = height;
+            
+            // Update breakpoint indicator
+            let breakpoint = '';
+            let columns = '';
+            
+            if (width >= 1024) {
+                breakpoint = 'Desktop';
+                columns = '4 columns';
+            } else if (width >= 768) {
+                breakpoint = 'Tablet';
+                columns = '2 columns';
+            } else if (width >= 480) {
+                breakpoint = 'Large Mobile';
+                columns = '1 column';
+            } else if (width >= 375) {
+                breakpoint = 'Mobile';
+                columns = '1 column';
+            } else {
+                breakpoint = 'Small Mobile';
+                columns = '1 column';
+            }
+            
+            document.getElementById('breakpointIndicator').textContent = 
+                `${breakpoint} (${width}px) - ${columns}`;
+        }
+        
+        // Run responsive tests
+        function runTests() {
+            const results = {
+                breakpoint: [],
+                layout: [],
+                typography: [],
+                touchTarget: []
+            };
+            
+            const width = window.innerWidth;
+            const statsGrid = document.querySelector('.stats-grid');
+            const welcomeMsg = document.querySelector('.welcome-message');
+            const statCards = document.querySelectorAll('.stat-card');
+            const actionBtns = document.querySelectorAll('.action-btn');
+            
+            // Test 1: Grid columns based on breakpoint
+            const gridStyle = window.getComputedStyle(statsGrid);
+            const gridColumns = gridStyle.gridTemplateColumns.split(' ').length;
+            
+            if (width >= 1024) {
+                results.breakpoint.push({
+                    name: 'Desktop: 4 columns (Requirement 6.1)',
+                    pass: gridColumns === 4,
+                    actual: `${gridColumns} columns`,
+                    expected: '4 columns'
+                });
+            } else if (width >= 768) {
+                results.breakpoint.push({
+                    name: 'Tablet: 2 columns (Requirement 6.2)',
+                    pass: gridColumns === 2,
+                    actual: `${gridColumns} columns`,
+                    expected: '2 columns'
+                });
+            } else {
+                results.breakpoint.push({
+                    name: 'Mobile: 1 column (Requirement 6.3)',
+                    pass: gridColumns === 1,
+                    actual: `${gridColumns} columns`,
+                    expected: '1 column'
+                });
+            }
+            
+            // Test 2: Grid gap
+            const gridGap = parseFloat(gridStyle.gap);
+            const expectedGap = width < 768 ? 16 : 24; // 1rem = 16px, 1.5rem = 24px
+            results.layout.push({
+                name: 'Grid gap spacing',
+                pass: Math.abs(gridGap - expectedGap) < 2,
+                actual: `${gridGap}px`,
+                expected: `${expectedGap}px`
+            });
+            
+            // Test 3: Container padding
+            const container = document.querySelector('.tickets-dashboard-container');
+            const containerStyle = window.getComputedStyle(container);
+            const padding = parseFloat(containerStyle.paddingLeft);
+            let expectedPadding = 32; // 2rem
+            if (width < 768) expectedPadding = 20; // 1.25rem
+            if (width < 480) expectedPadding = 16; // 1rem
+            
+            results.layout.push({
+                name: 'Container padding (Requirement 6.4)',
+                pass: Math.abs(padding - expectedPadding) < 2,
+                actual: `${padding}px`,
+                expected: `${expectedPadding}px`
+            });
+            
+            // Test 4: Welcome message font size
+            const welcomeStyle = window.getComputedStyle(welcomeMsg);
+            const fontSize = parseFloat(welcomeStyle.fontSize);
+            let expectedFontSize = 32; // 2rem
+            if (width < 768) expectedFontSize = 28; // 1.75rem
+            if (width < 480) expectedFontSize = 26; // 1.625rem
+            if (width < 375) expectedFontSize = 22; // 1.375rem
+            
+            results.typography.push({
+                name: 'Welcome message font size (Requirement 6.5)',
+                pass: Math.abs(fontSize - expectedFontSize) < 3,
+                actual: `${fontSize}px`,
+                expected: `${expectedFontSize}px`
+            });
+            
+            // Test 5: Stat value font size
+            const statValue = document.querySelector('.stat-value');
+            const statValueStyle = window.getComputedStyle(statValue);
+            const statFontSize = parseFloat(statValueStyle.fontSize);
+            let expectedStatSize = 32; // 2rem
+            if (width < 768) expectedStatSize = 28; // 1.75rem
+            if (width < 375) expectedStatSize = 24; // 1.5rem
+            
+            results.typography.push({
+                name: 'Stat value font size (Requirement 6.4)',
+                pass: Math.abs(statFontSize - expectedStatSize) < 3,
+                actual: `${statFontSize}px`,
+                expected: `${expectedStatSize}px`
+            });
+            
+            // Test 6: Touch target sizes
+            actionBtns.forEach((btn, index) => {
+                const btnStyle = window.getComputedStyle(btn);
+                const btnHeight = parseFloat(btnStyle.height);
+                const minHeight = width < 768 ? 48 : 44;
+                
+                results.touchTarget.push({
+                    name: `Action button ${index + 1} height (min ${minHeight}px)`,
+                    pass: btnHeight >= minHeight,
+                    actual: `${btnHeight.toFixed(1)}px`,
+                    expected: `≥${minHeight}px`
+                });
+            });
+            
+            // Test 7: Card padding
+            const card = statCards[0];
+            const cardStyle = window.getComputedStyle(card);
+            const cardPadding = parseFloat(cardStyle.paddingLeft);
+            let expectedCardPadding = 24; // 1.5rem
+            if (width < 768) expectedCardPadding = 20; // 1.25rem
+            if (width < 375) expectedCardPadding = 16; // 1rem
+            
+            results.layout.push({
+                name: 'Stat card padding',
+                pass: Math.abs(cardPadding - expectedCardPadding) < 2,
+                actual: `${cardPadding}px`,
+                expected: `${expectedCardPadding}px`
+            });
+            
+            // Display results
+            displayResults(results);
+        }
+        
+        function displayResults(results) {
+            document.getElementById('testResults').style.display = 'block';
+            
+            // Display breakpoint tests
+            displayTestCategory('breakpointTests', results.breakpoint);
+            displayTestCategory('layoutTests', results.layout);
+            displayTestCategory('typographyTests', results.typography);
+            displayTestCategory('touchTargetTests', results.touchTarget);
+            
+            // Scroll to results
+            document.getElementById('testResults').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function displayTestCategory(elementId, tests) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+            
+            if (tests.length === 0) {
+                container.innerHTML = '<p>No tests for this category at current viewport size.</p>';
+                return;
+            }
+            
+            tests.forEach(test => {
+                const div = document.createElement('div');
+                div.className = `test-result ${test.pass ? 'pass' : 'fail'}`;
+                div.innerHTML = `
+                    <strong>${test.pass ? '✓' : '✗'} ${test.name}</strong><br>
+                    Expected: ${test.expected} | Actual: ${test.actual}
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        // Initialize
+        updateViewportInfo();
+        window.addEventListener('resize', updateViewportInfo);
+        
+        // Auto-run tests on load
+        setTimeout(runTests, 500);
+    </script>
+</body>
+</html>

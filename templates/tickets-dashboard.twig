@@ -1,0 +1,121 @@
+{% extends "base.twig" %}
+
+{% block title %}Tickets Dashboard - Ticket Management App{% endblock %}
+
+{% block head %}
+    {# Tickets Dashboard styles #}
+    <link rel="stylesheet" href="/assets/css/tickets-dashboard.css">
+{% endblock %}
+
+{% block content %}
+<div class="tickets-dashboard-container">
+    {# Page Header Section #}
+    <header class="page-header" role="banner">
+        <h1 class="welcome-message">Welcome back, <span id="username">User</span>!</h1>
+        <p class="page-description">Here's an overview of your ticket management system.</p>
+    </header>
+    
+    {# Statistics Grid Section #}
+    <section class="stats-section" aria-labelledby="stats-heading">
+        <h2 id="stats-heading" class="sr-only">Ticket Statistics</h2>
+        <div class="stats-grid" role="list">
+            {# Total Tickets Card #}
+            <div class="stat-card loading" role="region" aria-label="Total tickets statistics" aria-busy="true">
+                <div class="stat-icon stat-icon-total" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label" id="totalLabel">Total Tickets</div>
+                    <div class="stat-value" id="totalCount" aria-labelledby="totalLabel">0</div>
+                </div>
+            </div>
+            
+            {# Open Tickets Card #}
+            <div class="stat-card loading" role="region" aria-label="Open tickets statistics" aria-busy="true">
+                <div class="stat-icon stat-icon-open" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="white">
+                        <circle cx="8" cy="8" r="4"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label" id="openLabel">Open Tickets</div>
+                    <div class="stat-value" id="openCount" aria-labelledby="openLabel">0</div>
+                </div>
+            </div>
+            
+            {# In Progress Card #}
+            <div class="stat-card loading" role="region" aria-label="In progress tickets statistics" aria-busy="true">
+                <div class="stat-icon stat-icon-progress" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="white">
+                        <circle cx="8" cy="8" r="4"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label" id="progressLabel">In Progress</div>
+                    <div class="stat-value" id="inProgressCount" aria-labelledby="progressLabel">0</div>
+                </div>
+            </div>
+            
+            {# Closed Tickets Card #}
+            <div class="stat-card loading" role="region" aria-label="Closed tickets statistics" aria-busy="true">
+                <div class="stat-icon stat-icon-closed" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="white">
+                        <circle cx="8" cy="8" r="4"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label" id="closedLabel">Closed Tickets</div>
+                    <div class="stat-value" id="closedCount" aria-labelledby="closedLabel">0</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    {# Quick Actions Section #}
+    <section class="quick-actions loading" aria-labelledby="actions-heading" aria-busy="true">
+        <h2 class="section-title" id="actions-heading">Quick Actions</h2>
+        <div class="action-buttons" role="list">
+            <button class="action-btn primary" id="createTicketBtn" 
+                    role="listitem"
+                    tabindex="0"
+                    aria-label="Create a new ticket">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Create New Ticket
+            </button>
+            <button class="action-btn secondary" id="viewAllTicketsBtn"
+                    role="listitem"
+                    tabindex="0"
+                    aria-label="View all tickets">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                </svg>
+                View All Tickets
+            </button>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts_footer %}
+    {# Authentication Manager #}
+    <script src="/assets/js/auth.js"></script>
+    
+    {# Ticket Management System #}
+    <script src="/assets/js/tickets.js"></script>
+    
+    {# Ticket Statistics Calculator #}
+    <script src="/assets/js/ticket-statistics.js"></script>
+    
+    {# Ticket Page Controller #}
+    <script src="/assets/js/ticket-page-controller.js"></script>
+{% endblock %}

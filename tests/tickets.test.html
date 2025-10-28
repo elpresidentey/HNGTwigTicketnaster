@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Management Module Tests</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-suite { margin-bottom: 30px; border: 1px solid #ddd; padding: 15px; }
+        .test-case { margin: 10px 0; padding: 8px; border-left: 3px solid #ccc; }
+        .test-pass { border-left-color: #4CAF50; background-color: #f1f8e9; }
+        .test-fail { border-left-color: #f44336; background-color: #ffebee; }
+        .test-summary { font-weight: bold; margin-top: 20px; padding: 10px; }
+        .pass { color: #4CAF50; }
+        .fail { color: #f44336; }
+        pre { background: #f5f5f5; padding: 10px; margin: 5px 0; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Ticket Management Module Unit Tests</h1>
+    <div id="test-results"></div>
+    <div id="test-summary"></div>
+
+    <!-- Load the required modules->
+    <script src="../public/assets/js/auth.js"></script>
+    <script src="../public/assets/js/tickets.js"></script>
+    
+    <script>
+        // Simple test framework
+        class TestRunner {
+            constructor() {
+                this.tests = [];
+                this.results = [];
+                this.currentSuite = '';
+            }
+
+            describe(suiteName, testFn) {
+                this.currentSuite = suiteName;
+                console.log(`\n=== ${suiteName} ===`);
+                testFn();
+            }
+
+            it(testName, testFn) {
+                try {
+                    testFn();
+                    this.results.push({ suite: this.currentSuite, name: testName, status: 'pass' });
+                    console.log(`✓ ${testName}`);
+                } catch (error) {
+                    this.results.push({ 
+                        suite: this.currentSuite, 
+                        name: testName, 
+                        status: 'fail', 
+                        error: error.message 
+                    });
+                    console.error(`✗ ${testName}: ${error.message}`);
+                }
+            }
+
+            expect(actual) {
+                return {
+                    toBe: (expected) => {
+                        if (actual !== expected) {
+                            throw new Error(`Expected ${expected}, but got ${actual}`);
+                        }
+                    },
+                    toEqual: (expected) => {
+                        if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+                            throw new Error(`Expected ${JSON.stringify(expected)}, but got ${JSON.stringify(actual)}`);
+                        }
+                    },
+                    toBeTruthy: () => {
+                        if (!actual) {
+                            throw new Error(`Expected truthy value, but got ${actual}`);
+                        }
+                    },
+                    toBeFalsy: () => {
+                        if (actual) {
+                            throw new Error(`Expected falsy value, but got ${actual}`);
+                        }
+                    },
+                    toContain: (expected) => {
+                        if (typeof actual === 'string' && !actual.includes(expected)) {
+                            throw new Error(`Expected "${actual}" to contain "${expected}"`);
+                        }
+                        if (Array.isArray(actual) && !actual.includes(expected)) {
+                            throw new Error(`Expected array to contain ${expected}`);
+                        }
+                    },
+                    toBeGreaterThan: (expected) => {
+                        if (actual <= expected) {
+                            throw new Error(`Expected ${actual} to be greater than ${expected}`);
+                        }
+                    },
+                    toHaveLength: (expected) => {
+                        if (!actual || actual.length !== expected) {
+                            throw new Error(`Expected length ${expected}, but got ${actual ? actual.length : 'undefined'}`);
+                        }
+                    }
+                };
+            }
+
+            renderResults() {
+                const resultsDiv = document.getElementById('test-results');
+                const summaryDiv = document.getElementById('test-summary');
+                
+                let html = '';
+                let currentSuite = '';
+                
+                this.results.forEach(result => {
+                    if (result.suite !== currentSuite) {
+                        if (currentSuite !== '') html += '</div>';
+                        html += `<div class="test-suite"><h3>${result.suite}</h3>`;
+                        currentSuite = result.suite;
+                    }
+                    
+                    const statusClass = result.status === 'pass' ? 'test-pass' : 'test-fail';
+                    const statusIcon = result.status === 'pass' ? '✓' : '✗';
+                    
+                    html += `<div class="test-case ${statusClass}">
+                        ${statusIcon} ${result.name}
+                        ${result.error ? `<pre>Error: ${result.error}</pre>` : ''}
+                    </div>`;
+                });
+                
+                if (currentSuite !== '') html += '</div>';
+                resultsDiv.innerHTML = html;
+                
+                // Summary
+                const passed = this.results.filter(r => r.status === 'pass').length;
+                const failed = this.results.filter(r => r.status === 'fail').length;
+                const total = this.results.length;
+                
+                summaryDiv.innerHTML = `
+                    <div class="test-summary">
+                        Tests: ${total} | 
+                        <span class="pass">Passed: ${passed}</span> | 
+                        <span class="fail">Failed: ${failed}</span>
+                    </div>
+                `;
+            }
+        }
+
+        // Mock localStorage for testing
+        class MockLocalStorage {
+            constructor() {
+                this.store = {};
+            }
+
+            getItem(key) {
+                return this.store[key] || null;
+            }
+
+            setItem(key, value) {
+                this.store[key] = String(value);
+            }
+
+            removeItem(key) {
+                delete this.store[key];
+            }
+
+            clear() {
+                this.store = {};
+            }
+
+            get length() {
+                return Object.keys(this.store).length;
+            }
+
+            key(index) {
+                const keys = Object.keys(this.store);
+                return keys[index] || null;
+            }
+        }
+
+        // Initialize test runner
+        const testRunner = new TestRunner();
+        const { describe, it, expect } = testRunner;
+
+        // Store original localStorage
+        const originalLocalStorage = window.localStorage;
+
+        // Helper function to create authenticated ses
+        function createAuthenticatedSession(mockStorag{
+            const sessionData = {
+                token: 'test-token',
+                user: { id: 'user123', username: 'testuser', email: 'test@example.com' },
+                expiresAt: Date.now() + 86400000
+            };
+            mockStorage.setItem('ticketapp_session', JSON.stringify(sessionData));
+        }
+
+        // Helper function to create sample tickets
+        function createSampleTickets() {
+            return [
+                {
+                    id: 'ticket_1',
+                    title: 'Tes,
+                    descriptt',
+              n',
+         6400000,
+,
+                    userId: 'user123'
+                },
+                {
+
+                    title: 'TeTicket 2',
+                    description: 'Second test ticket',
+                    status: 'In Progress',
+                    createdAt: Date.now() - 43200000,
+                    updatedAt: Date.now() - 43200000,
+             '
+    }
+            ];
+        }
+
+        // Run t
+        describe('TicketManager - CRUD Operations', () => {
+            let ger;
+            let mockLocalStorage;
+
+            function setup() {
+                mockLocalStorage = new MockLocalStorage();
+                window.localStorage = mockLocalStorage
+                createAuthenticatedSession(mockLocalStorage);
+               ger();
+
+
+            it('should c{
+                setup();
+                
+                const ticketData = {
+                ',
+                    description: 'This is a test ticket',
+                    status: 'Open'
+                };
+
+               );
+
+                expect(result.success).toBe(true);
+                expect(rt');
+                ticket');
+                expect(result.ticket.statu
+                expect(result.ticket.id).toBeTruthy();
+                expect(result.ticket.userId).toBe('user123');
+            });
+
+            it('() => {
+                mockLocalStorage = new MockLocalrage();
+                window.localStorage = mockLocalStorage;
+                ticketManager = new TicketManager();
+
+
+                    title: 'Test Ticket',
+                    desc,
+                
+                };
+
+                const result = await ticketManager.creat
+
+                expect(result.success).toBe(false);
+                expect(result.error).toContain('authenticated');
+            });
+
+            it('should retrieve all tickets for current user', () => {
+                setup();
+                
+               
+s));
+
+                const ti);
+
+                expect(tickets).toHaveLe2);
+                expect(tickets[0].title).toBe('Test Ticket 2'); // Newest first
+                expect(tickets[1].title).toBe('Test Tick
+            });
+
+            it(' {
+                setup();
+
+                const tickets = ticketManager.getTickets();
+
+                expect(tickets).toHaveLengt);
+            });
+
+            it( () => {
+();
+                
+                const sats();
+                ickets));
+
+                const updates = {
+                    title: 'Updated Ticket Title',
+                d'
+                };
+
+                const result = await ticketManager.);
+
+                expect(result.success).toBe(true);
+                expect(result.ticket.title).toBe('Updated Ticket e');
+               ');
+           t);
+});
+
+            it('should fail to
+                setup();
+
+                const updates e' };
+                const result = await ticketManager.updateT;
+
+                expect(result.success).toBe(false);
+                expect(result.error).toContain('not 
+            });
+
+            it('should delete a ticket with confirmation', async () => {
+                setup();
+                
+                
+                mockLocalStorage.setItem('tickets', JSON.stringify(sampleTic);
+
+                const result = await ticketManager.);
+
+                expect(result.success).toBe(true);
+               ');
+    
+                const remainingTickets = ticketManager.getTickets();
+                expect(rth(1);
+                expect(remainingTickets[0].id).toBe('ticket_2');
+            });
+
+            it('should require confirmation for ticket deletion', async () =
+                etup();
+                
+                const sampleTickets = createSampleTickets();
+               );
+
+                const result = await ticketManager.deleteTicket('ticket_1', false;
+
+                expect(result.success).toBe(false);
+                rue);
+                expect(result.ticket.id).toBe('ticket_1');
+            });
+        });
+
+        describ
+r;
+            let mockLocalStorage;
+
+            function setup() {
+                mockLocalStorage = new MockLocalStorage();
+                
+                createAuthenticatedSession(mockLocalStorage);
+                ager();
+            }
+
+            it() => {
+);
+
+                const tiData = {
+                    description: 'Test description',
+                n'
+                };
+
+                const result = await ticketManageretData);
+
+               
+
+            });
+
+            it('should validate title length limits', async () => {
+                
+
+                
+                const ticketData = {
+                    title: longTitle,
+               
+           '
+
+
+                const result =ata);
+
+;
+                expect(result.;
+            });
+
+            it('should validate status values', asyn {
+             
+
+                const ticketData = {
+                    titl
+                    description: 'Test description',
+                id Status'
+                };
+
+                const result = await ticketManager.ta);
+
+               se);
+);
+            });
+
+            it('
+                setup();
+
+                const longDescription = 'a'.repeat(501);
+               tData = {
+ket',
+                    description: longDescription,
+                    stat'
+                
+
+                ta);
+
+                expect(result.success).toBe(false);
+               ');
+
+
+            it('should a{
+                tup();
+
+                 {
+                    title: 'Test Ticket',
+                    description: '',
+               pen'
+           
+
+                const result = await ticketManager.createTita);
+
+                expect(result.suc
+Be('');
+            });
+        });
+
+        describe('TicketManager - Utility Methods', () =>
+            let ticketManager;
+            l;
+
+            function setup() {
+                mockLocaorage();
+                torage;
+                createAuthenticatedSession(mockLocalStorage);
+                ticketManager = new TicketManager();
+            }
+
+            it('> {
+                setup();
+                
+                const sampleTickets = createSampleTickets();
+               
+
+                const ticket = ticketManager.getTicketById('ticket_1');
+
+                thy();
+                expect(ticket.title).toBe('Test Ticket 1');
+            });
+
+            it(
+setup();
+
+                const tint');
+
+                expect(ticket).toBe(null);
+            });
+
+            it('
+                setup();
+                
+                
+                mockLocalStorage.setItem('tickets', s));
+
+                const openTickets = ticketManager.getTicketen');
+                const inProgressTickets = ticketManager.getTicketsByStat);
+
+(1);
+                expect(openTickets[0].status).toBe('Open');
+                expect(i
+                ss');
+            });
+
+            it('should generate ticket statistics', () => {
+                setup();
+                
+                const sampleTickets = [
+                
+                    {
+                        id: 'ticket_3',
+                        title: 'Closed Ticket',
+                        description: 'Closed t',
+               losed',
+           te.now(),
+now(),
+                        userId: 'user123'
+                    }
+
+                mockLocalStora
+
+             
+
+                expect(stats.total).toBe(3);
+                expect(sBe(1);
+                expect(stats.inProgress).toBe(1);
+                
+            });
+
+            it('should generate unique ticket IDs'
+                setup();
+
+);
+                const id2 = ticketManager.generateTicketId();
+
+                expect(id1).toBeTruthy();
+                ;
+                expect(id1).not.toBe(id2);
+                
+                expect(id2).toContain('ticket_');
+            });
+        });
+
+        describe('TicketValidator - Field Validation', () => {
+            let validator;
+
+            func() {
+                validator = new TicketValidator();
+            }
+
+            it('should validate create ticket data', () => {
+               
+
+                const validData = {
+                    titltle',
+                    description: 'Valid description',
+                pen'
+                };
+
+                const result = validator.validateCr
+
+               ;
+;
+            });
+
+            it('should reject invalid title', () => {
+                ();
+
+                ta = {
+                    title: '',
+                    description: 'Valid description',
+               en'
+
+
+                const re
+
+                (false);
+                expect(result.errors.title).toBeTruthy();
+            });
+
+            it('should reject title that is too long', () > {
+               ;
+
+
+                    title: 'a'.repeat(101),
+                    description',
+
+                };
+
+             ;
+
+                expect(result.isValid).toBe(false);
+                expect(r;
+            });
+
+            it(' => {
+                setup();
+
+                const invalidData = {
+                    title: 'ab',
+                    description: 'Valid description',
+               
+       };
+
+                const re;
+
+                expect(result.isValid).toBe(false);
+                ');
+            });
+
+            it('should reject invalid status', () = {
+                setup();
+
+               ta = {
+le',
+                    description: 'Valid description',
+                    status'
+                };
+
+                const result = validator.validateCreateTicket(invalidData);
+
+                expect(result.isValid).toBe(false);
+                expect(result.errors.status).toBeTruthy();
+            });
+
+            it(
+
+
+                const in
+                ',
+                    description: 'a'.repeat(501),
+                n'
+                };
+
+                const result = validator.validateCreateData);
+
+               ;
+');
+            });
+
+            it('should validate update data with partial fields> {
+                ();
+
+                = {
+                    title: 'Updated Title'
+                };
+
+                const result = validator.validateUpdateTicke
+
+           );
+(0);
+            });
+        });
+
+        describe('TicketManage{
+            let ticketManager;
+            le;
+
+       >>
+</html
+</bodypt>    </scriesults();
+renderRunner.  testR  s
+    ultder test res   // Ren  
+   alStorage;
+inalLocage = origlStorindow.loca      wge
+  Storaal local origin // Restore  
+
+     );       }  });
+           
+own();teard            ;
+
+    img')'&lt;Contain(erHTML).to.innardxpect(c       e         ;
+t&gt;')('&lt;scrip.toContainTML).innerHct(card    expe         mg');
+   <ioContain('.tML).notinnerHTexpect(card.                
+);<script>'ain('.not.toContML)HTrd.innerxpect(ca e          
+     ;
+t)tickeketCard(r.createTicgeManaketiccard = t      const         };
+
+               123'
+   'user    userId:                (),
+ .nowte DadAt:      update           
+   e.now(),dAt: Datate  cre                  en',
+s: 'Optusta                 
+   >',lert(1)"or="aonerr" mg src="xiption: '<icr         des         ,
+  t>'")</scripxss"lert(pt>aitle: '<scri       t      ,
+       st_ticket'   id: 'te               et = {
+  t tick       cons        
+               ;
+      setup()           ) => {
+ content', (cket  in ti HTMLpeuld esca  it('sho
+          });
+            wn();
+teardo                );
+
+oBeTruthy(te-btn')).ttor('.delelecrySe(card.que expect              thy();
+ ruoBeTn')).tbt'.edit-tor(Selecueryxpect(card.q        e       
+ ');'OpentoContain().nnerHTMLt(card.i   expec           ;
+  escription') dn('TestontaioCerHTML).tinnt(card.pec   ex            
+ d Ticket');('Test CarL).toContainnerHTMct(card.in    expe            t');
+tickee('test_id')).toBicket-ta-tdaribute('ttard.getAct(c     expe    );
+       (true')).toBet-card('tickecontainsList.lass.cect(card exp            
+   );
+kettCard(ticckereateTier.cetManag tickd = car  const             };
+
+           3'
+      r12serId: 'use         u         w(),
+  te.noAt: Dated       upda           e.now(),
+  atedAt: Dat    cre              'Open',
+  :     status     
+           ion',iptscrest deon: 'Tripti     desc                Ticket',
+ CardTesttitle: '           
+         t_ticket',    id: 'tes             {
+    ticket =        const            
+           p();
+         setu         () => {
+ure', roper struct with pcket card tiateould cre    it('sh
+
+         });
+           eardown();  t         ;
+
+     veLength(2)toHa).')ardicket-cctorAll('.tquerySeletainer. expect(con            
+   2');ket 'Test Ticn(toContaiTML).erHer.innainct(contexpe         
+       t 1');('Test TickeainML).toContHTinnerontainer.(cpect      ex     
+     ntainer');'ticketColementById(ent.getEum= doctainer  con  const             ts();
+
+ Ticker.renderManagecket         ti     ));
+
+  pleTicketstringify(samJSON.s'tickets', setItem(alStorage.ockLoc    m          ;
+  Tickets()ateSamplekets = creeTicplamst s         con
+                     etup();
+          s{
+        ', () => ner in contaiketsicender t'should r        it(});
+
+           
+     down();arte              ket');
+
+  First Ticte Your eantain('CrML).toCoinnerHT(container.   expect            
+ ets yet');ickain('No tL).toConter.innerHTMect(containexp           er');
+     etContainId('tickElementBycument.get= doer tain con    const           
+ ets();
+derTickager.ren  ticketMan           
+   ();
+tup se      
+         () => {st', exino tickets state when empty r ld rendet('shou       i  }
+
+                }
+         ;
+      ()ovetainer.rem       con           ner) {
+  tai(con if        
+        ');ketContainerd('ticementByIgetElt. documen container =     const       n() {
+    on teardow functi
+           }
+          
+  tainer);ild(conappendCh.body. document           
+    ner';Contaiid = 'ticketiner.   conta          ;
+   v')eElement('dient.creatr = documtaine   const con             
+t containereate tes     // Cr            
+          r();
+     geManaetck new Tinager =ketMaic t          ge);
+     lStoracasion(mockLodSesicatehentteAut crea            
+   lStorage;ocage = mockLw.localStora windo             orage();
+  ocalStkL Mocrage = newlSto  mockLoca          
+    () {tion setup    func alStoragockLocet m() => tion', la DOM Manipur -engthveLHarrors)).to(result.ect.keysexpect(Obje                ruealid).toBe(tesult.isV  expect(r   pdateData);t(uata dateDconst upsetup) =', (aractersin('500 chon).toContascriptis.deerrorlt. expect(resu               se)faloBe(d).talisult.isVexpect(re nvalidicket(iT 'Opetatus:    sValid Titletle: '    tiidData = {valp();etu     s           > {, () =ong' loo tisn that ioripteject deschould r'sInvalid Stat: 'us Titliditle: 'Va t                   nvalidDa const i>haracters c('3ntainle).toCoors.titt.errt(resulxpeceData)idalTicket(invreateidateCidator.val= valsult          : 'Open'   status  ', ()horts too st itle thaeject tishould rs')aracter0 chain('10oCont.title).tult.errorsesData)validateTicket(ineCredatvaliator. validlt =nst resu   co'Open' status:                    d description: 'ValiidData = {val    const in            etup() s=.toBelt.isValid)expect(resua);DatnvalideateTicket(ir.validateCrdatovali = ltsu  };              Op  status: '   st invalidDaconsetupeLength(0)ors)).toHavesult.errject.keys(r expect(Ob               true)).toBe(alid.isVt(result expec);dDataeTicket(valieat 'O status:   'Valid Tie:  setup();n setuptiot_');ntain('ticked1).toCo(iexpectoBeTruthy()t(id2).tpecexeTicketId(ger.generatcketManaid1 = tinst   co              () => {, toBe(1);.closed).(statsectexp.open).totats();tats.getTicketScketManager= tistats nst   co ;))Ticketsify(sampletringts', JSON.skesetItem('ticge.       function setup() {
+                validator = new TicketValidator();
+            }
+
+            it('should validate ticket creation with valid data', () => {
+                setup();
+                const ticketData = createSampleTicketData();
+                
+                const result = validator.validateCreateTicket(ticketData);
+                
+                expect(result.isValid).toBe(true);
+                expect(Object.keys(result.errors)).toHaveLength(0);
+            });
+
+            it('should reject creation with missing title', () => {
+                setup();
+                const ticketData = createSampleTicketData({ title: '' });
+                
+                const result = validator.validateCreateTicket(ticketData);
+                
+                expect(result.isValid).toBe(false);
+                expect(result.errors.title).toBeTruthy();
+            });
+
+            it('should reject creation with short title', () => {
+                setup();
+                const ticketData = createSampleTicketData({ title: 'ab' }); // 2 characters
+                
+                const result = validator.validateCreateTicket(ticketData);
+                
+                expect(result.isValid).toBe(false);
+                expect(result.errors.title).toContain('at least 3 characters');
+            });
+
+            it('should reject creation with invalid status', () => {
+                setup();
+                const ticketData = createSampleTicketData({ status: 'Invalid' });
+                
+                const result = validator.validateCreateTicket(ticketData);
+                
+                expect(result.isValid).toBe(false);
+                expect(result.errors.status).toContain('Open, In Progress, Closed');
+            });
+
+            it('should validate partial updates', () => {
+                setup();
+                const updates = { title: 'Updated Title' };
+                
+                const result = validator.validateUpdateTicket(updates);
+                
+                expect(result.isValid).toBe(true);
+                expect(Object.keys(result.errors)).toHaveLength(0);
+            });
+
+            it('should reject update with invalid field', () => {
+                setup();
+                const updates = { status: 'Invalid Status' };
+                
+                const result = validator.validateUpdateTicket(updates);
+                
+                expect(result.isValid).toBe(false);
+                expect(result.errors.status).toBeTruthy();
+            });
+        });
+
+        describe('TicketErrorHandler - Error Handling', () => {
+            let errorHandler;
+
+            function setup() {
+                errorHandler = new TicketErrorHandler();
+            }
+
+            it('should handle storage quota exceeded error', () => {
+                setup();
+                const quotaError = new Error('Storage quota exceeded');
+                quotaError.name = 'QuotaExceededError';
+                
+                const result = errorHandler.handleStorageError(quotaError, 'create ticket');
+                
+                expect(result.success).toBe(false);
+                expect(result.errorType).toBe('quota');
+                expect(result.error).toContain('Storage limit reached');
+            });
+
+            it('should handle security error', () => {
+                setup();
+                const securityError = new Error('Security error');
+                securityError.name = 'SecurityError';
+                
+                const result = errorHandler.handleStorageError(securityError, 'save data');
+                
+                expect(result.success).toBe(false);
+                expect(result.errorType).toBe('security');
+                expect(result.error).toContain('Storage access denied');
+            });
+
+            it('should handle validation errors', () => {
+                setup();
+                const errors = { title: 'Title is required', status: 'Invalid status' };
+                
+                const result = errorHandler.handleValidationErrors(errors, 'ticket creation');
+                
+                expect(result.success).toBe(false);
+                expect(result.errorType).toBe('validation');
+                expect(result.errors).toEqual(errors);
+                expect(result.context).toBe('ticket creation');
+            });
+
+            it('should handle authentication errors', () => {
+                setup();
+                
+                const result = errorHandler.handleAuthError('User not logged in');
+                
+                expect(result.success).toBe(false);
+                expect(result.errorType).toBe('authentication');
+                expect(result.requiresAuth).toBe(true);
+                expect(result.error).toBe('User not logged in');
+            });
+
+            it('should handle general application errors', () => {
+                setup();
+                const appError = new Error('Unexpected error');
+                
+                const result = errorHandler.handleApplicationError(appError, 'ticket processing');
+                
+                expect(result.success).toBe(false);
+                expect(result.errorType).toBe('application');
+                expect(result.context).toBe('ticket processing');
+                expect(result.originalError).toBe(appError);
+            });
+        });
+
+        // Restore original localStorage
+        window.localStorage = originalLocalStorage;
+
+        // Render test results
+        testRunner.renderResults();
+    </script>
+</body>
+</html>

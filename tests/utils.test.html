@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Utility Modules Test Suite</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8fafc;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .test-controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 0 5px;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            background: #2563eb;
+        }
+        
+        .btn.secondary {
+            background: #6b7280;
+        }
+        
+        .btn.secondary:hover {
+            background: #4b5563;
+        }
+        
+        .test-results {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .summary {
+            padding: 20px;
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .summary h3 {
+            margin: 0;
+            color: #1e293b;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+        
+        .passed { color: #10b981; }
+        .failed { color: #ef4444; }
+        .total { color: #3b82f6; }
+        
+        .test-suite {
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .suite-header {
+            padding: 15px 20px;
+            background: #f8fafc;
+            font-weight: 600;
+            color: #1e293b;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .suite-header:hover {
+            background: #f1f5f9;
+        }
+        
+        .suite-toggle {
+            font-size: 12px;
+            color: #64748b;
+        }
+        
+        .test-list {
+            display: none;
+        }
+        
+        .test-list.expanded {
+            display: block;
+        }
+        
+        .test-item {
+            padding: 10px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .test-item:last-child {
+            border-bottom: none;
+        }
+        
+        .test-status {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .test-status.pass {
+            background: #10b981;
+        }
+        
+        .test-status.fail {
+            background: #ef4444;
+        }
+        
+        .test-name {
+            flex: 1;
+            color: #374151;
+        }
+        
+        .test-error {
+            margin-top: 5px;
+            padding: 8px 12px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #dc2626;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #10b981;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .running {
+            opacity: 0.7;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Utility Modules Test Suite</h1>
+        <p>Comprehensive tests for ToastSystem, StorageManager, SecurityUtils, and other utility classes</p>
+    </div>
+
+    <div class="test-controls">
+        <button class="btn" onclick="runAllTests()">Run All Tests</button>
+        <button class="btn secondary" onclick="clearResults()">Clear Results</button>
+        <button class="btn secondary" onclick="toggleAllSuites()">Toggle All Suites</button>
+    </div>
+
+    <div class="test-results" id="testResults">
+        <div class="summary">
+            <h3>Test Results</h3>
+            <div class="stats">
+                <div class="stat">
+                    <span class="stat-number total" id="totalTests">0</span>
+                    <span class="stat-label">Total</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number passed" id="passedTests">0</span>
+                    <span class="stat-label">Passed</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number failed" id="failedTests">0</span>
+                    <span class="stat-label">Failed</span>
+                </div>
+            </div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div id="testSuites"></div>
+    </div>
+
+    <!-- Load utility modules -->
+    <script src="../public/assets/js/utils.js"></script>
+
+    <script>
+        // Test framework
+        class TestFramework {
+            constructor() {
+                this.suites = [];
+                this.currentSuite = null;
+                this.results = [];
+                this.isRunning = false;
+            }
+
+            describe(name, fn) {
+                this.currentSuite = { name, tests: [] };
+                this.suites.push(this.currentSuite);
+                fn();
+                this.currentSuite = null;
+            }
+
+            it(name, fn) {
+                if (!this.currentSuite) {
+                    throw new Error('Test must be inside a describe block');
+                }
+                this.currentSuite.tests.push({ name, fn });
+            }
+
+            expect(actual) {
+                return {
+                    toBe: (expected) => {
+                        if (actual !== expected) {
+                            throw new Error(`Expected ${expected}, but got ${actual}`);
+                        }
+                    },
+                    toEqual: (expected) => {
+                        if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+                            throw new Error(`Expected ${JSON.stringify(expected)}, but got ${JSON.stringify(actual)}`);
+                        }
+                    },
+                    toBeTruthy: () => {
+                        if (!actual) {
+                            throw new Error(`Expected truthy value, but got ${actual}`);
+                        }
+                    },
+                    toBeFalsy: () => {
+                        if (actual) {
+                            throw new Error(`Expected falsy value, but got ${actual}`);
+                        }
+                    },
+                    toContain: (expected) => {
+                        if (typeof actual === 'string' && !actual.includes(expected)) {
+                            throw new Error(`Expected "${actual}" to contain "${expected}"`);
+                        }
+                        if (Array.isArray(actual) && !actual.includes(expected)) {
+                            throw new Error(`Expected array to contain ${expected}`);
+                        }
+                    },
+                    toBeGreaterThan: (expected) => {
+                        if (actual <= expected) {
+                            throw new Error(`Expected ${actual} to be greater than ${expected}`);
+                        }
+                    },
+                    toBeLessThan: (expected) => {
+                        if (actual >= expected) {
+                            throw new Error(`Expected ${actual} to be less than ${expected}`);
+                        }
+                    },
+                    toMatch: (pattern) => {
+                        if (!pattern.test(actual)) {
+                            throw new Error(`Expected "${actual}" to match pattern ${pattern}`);
+                        }
+                    }
+                };
+            }
+
+            async runTests() {
+                if (this.isRunning) return;
+                
+                this.isRunning = true;
+                this.results = [];
+                
+                const totalTests = this.suites.reduce((sum, suite) => sum + suite.tests.length, 0);
+                let completedTests = 0;
+                
+                this.updateProgress(0, totalTests);
+                
+                for (const suite of this.suites) {
+                    const suiteResults = [];
+                    
+                    for (const test of suite.tests) {
+                        try {
+                            // Clear localStorage before each test
+                            localStorage.clear();
+                            
+                            await test.fn();
+                            suiteResults.push({ name: test.name, status: 'pass' });
+                        } catch (error) {
+                            suiteResults.push({ 
+                                name: test.name, 
+                                status: 'fail', 
+                                error: error.message 
+                            });
+                        }
+                        
+                        completedTests++;
+                        this.updateProgress(completedTests, totalTests);
+                        
+                        // Small delay to show progress
+                        await new Promise(resolve => setTimeout(resolve, 10));
+                    }
+                    
+                    this.results.push({ suite: suite.name, tests: suiteResults });
+                }
+                
+                this.displayResults();
+                this.isRunning = false;
+            }
+
+            updateProgress(completed, total) {
+                const percentage = total > 0 ? (completed / total) * 100 : 0;
+                document.getElementById('progressFill').style.width = `${percentage}%`;
+            }
+
+            displayResults() {
+                const totalTests = this.results.reduce((sum, suite) => sum + suite.tests.length, 0);
+                const passedTests = this.results.reduce((sum, suite) => 
+                    sum + suite.tests.filter(test => test.status === 'pass').length, 0);
+                const failedTests = totalTests - passedTests;
+
+                document.getElementById('totalTests').textContent = totalTests;
+                document.getElementById('passedTests').textContent = passedTests;
+                document.getElementById('failedTests').textContent = failedTests;
+
+                const suitesContainer = document.getElementById('testSuites');
+                suitesContainer.innerHTML = '';
+
+                this.results.forEach((suiteResult, index) => {
+                    const suiteElement = this.createSuiteElement(suiteResult, index);
+                    suitesContainer.appendChild(suiteElement);
+                });
+            }
+
+            createSuiteElement(suiteResult, index) {
+                const suiteDiv = document.createElement('div');
+                suiteDiv.className = 'test-suite';
+
+                const header = document.createElement('div');
+                header.className = 'suite-header';
+                header.onclick = () => this.toggleSuite(index);
+                
+                const passedCount = suiteResult.tests.filter(test => test.status === 'pass').length;
+                const totalCount = suiteResult.tests.length;
+                
+                header.innerHTML = `
+                    <span>${suiteResult.suite}</span>
+                    <span class="suite-toggle">${passedCount}/${totalCount} passed</span>
+                `;
+
+                const testList = document.createElement('div');
+                testList.className = 'test-list';
+                testList.id = `suite-${index}`;
+
+                suiteResult.tests.forEach(test => {
+                    const testItem = document.createElement('div');
+                    testItem.className = 'test-item';
+
+                    const status = document.createElement('div');
+                    status.className = `test-status ${test.status}`;
+                    status.textContent = test.status === 'pass' ? '✓' : '✗';
+
+                    const name = document.createElement('div');
+                    name.className = 'test-name';
+                    name.textContent = test.name;
+
+                    testItem.appendChild(status);
+                    testItem.appendChild(name);
+
+                    if (test.error) {
+                        const error = document.createElement('div');
+                        error.className = 'test-error';
+                        error.textContent = test.error;
+                        testItem.appendChild(error);
+                    }
+
+                    testList.appendChild(testItem);
+                });
+
+                suiteDiv.appendChild(header);
+                suiteDiv.appendChild(testList);
+
+                return suiteDiv;
+            }
+
+            toggleSuite(index) {
+                const testList = document.getElementById(`suite-${index}`);
+                testList.classList.toggle('expanded');
+            }
+        }
+
+        // Initialize test framework
+        const testFramework = new TestFramework();
+        const describe = testFramework.describe.bind(testFramework);
+        const it = testFramework.it.bind(testFramework);
+        const expect = testFramework.expect.bind(testFramework);
+
+        // Define tests
+        describe('ToastSystem - Display and Dismissal', () => {
+            let toastSystem;
+
+            function setup() {
+                // Clear any existing toast containers
+                const existing = document.getElementById('toast-container');
+                if (existing) {
+                    existing.remove();
+                }
+                toastSystem = new ToastSystem();
+            }
+
+            it('should create toast container on initialization', () => {
+                setup();
+                expect(toastSystem.container).toBeTruthy();
+                expect(toastSystem.container.id).toBe('toast-container');
+                expect(toastSystem.container.className).toBe('toast-container');
+            });
+
+            it('should show toast with correct message and type', () => {
+                setup();
+                const toastId = toastSystem.show('Test message', 'success');
+                
+                expect(toastId).toBeTruthy();
+                expect(toastId).toContain('toast-');
+                expect(toastSystem.toasts.has(toastId)).toBe(true);
+            });
+
+            it('should show success toast with correct type', () => {
+                setup();
+                const toastId = toastSystem.showSuccess('Success message');
+                
+                expect(toastId).toBeTruthy();
+                expect(toastSystem.toasts.has(toastId)).toBe(true);
+            });
+
+            it('should show error toast with correct type', () => {
+                setup();
+                const toastId = toastSystem.showError('Error message');
+                
+                expect(toastId).toBeTruthy();
+                expect(toastSystem.toasts.has(toastId)).toBe(true);
+            });
+
+            it('should dismiss toast by ID', () => {
+                setup();
+                const toastId = toastSystem.show('Test message');
+                
+                expect(toastSystem.toasts.has(toastId)).toBe(true);
+                
+                toastSystem.dismiss(toastId);
+                
+                // Toast should be marked for removal (timer cleared)
+                const toastData = toastSystem.toasts.get(toastId);
+                expect(toastData.timer).toBe(null);
+            });
+
+            it('should escape HTML in messages', () => {
+                setup();
+                const escaped = toastSystem.escapeHtml('<script>alert("xss")</script>');
+                expect(escaped).toBe('&lt;script&gt;alert("xss")&lt;/script&gt;');
+            });
+        });
+
+        describe('StorageManager - LocalStorage Operations', () => {
+            let storageManager;
+
+            function setup() {
+                localStorage.clear();
+                storageManager = new StorageManager();
+            }
+
+            it('should check localStorage availability', () => {
+                setup();
+                expect(storageManager.isAvailable).toBe(true);
+            });
+
+            it('should set and get items successfully', () => {
+                setup();
+                const testData = { name: 'test', value: 123 };
+                
+                const setResult = storageManager.setItem('test-key', testData);
+                expect(setResult).toBe(true);
+                
+                const retrievedData = storageManager.getItem('test-key');
+                expect(retrievedData).toEqual(testData);
+            });
+
+            it('should return default value for non-existent keys', () => {
+                setup();
+                const defaultValue = { default: true };
+                
+                const result = storageManager.getItem('non-existent', defaultValue);
+                expect(result).toEqual(defaultValue);
+            });
+
+            it('should remove items successfully', () => {
+                setup();
+                storageManager.setItem('test-key', 'test-value');
+                
+                const removeResult = storageManager.removeItem('test-key');
+                expect(removeResult).toBe(true);
+                
+                const retrievedData = storageManager.getItem('test-key');
+                expect(retrievedData).toBe(null);
+            });
+
+            it('should clear all storage', () => {
+                setup();
+                storageManager.setItem('key1', 'value1');
+                storageManager.setItem('key2', 'value2');
+                
+                const clearResult = storageManager.clear();
+                expect(clearResult).toBe(true);
+                
+                expect(storageManager.getItem('key1')).toBe(null);
+                expect(storageManager.getItem('key2')).toBe(null);
+            });
+        });
+
+        describe('SecurityUtils - Input Sanitization', () => {
+            it('should escape HTML characters correctly', () => {
+                const input = '<script>alert("xss")</script>';
+                const escaped = SecurityUtils.escapeHtml(input);
+                expect(escaped).toBe('&lt;script&gt;alert("xss")&lt;&#x2F;script&gt;');
+            });
+
+            it('should handle non-string input in escapeHtml', () => {
+                expect(SecurityUtils.escapeHtml(123)).toBe('123');
+                expect(SecurityUtils.escapeHtml(null)).toBe('null');
+                expect(SecurityUtils.escapeHtml(undefined)).toBe('undefined');
+            });
+
+            it('should sanitize input with default options', () => {
+                const input = '  <script>alert("test")</script>  ';
+                const sanitized = SecurityUtils.sanitizeInput(input);
+                expect(sanitized).toBe('&lt;script&gt;alert("test")&lt;&#x2F;script&gt;');
+            });
+
+            it('should sanitize URLs correctly', () => {
+                expect(SecurityUtils.sanitizeUrl('https://example.com')).toBe('https://example.com/');
+                expect(SecurityUtils.sanitizeUrl('javascript:alert(1)')).toBe(null);
+                expect(SecurityUtils.sanitizeUrl('invalid-url')).toBe(null);
+            });
+        });
+
+        describe('ValidationUtils - Form Validation', () => {
+            it('should validate email addresses correctly', () => {
+                expect(ValidationUtils.isValidEmail('test@example.com')).toBe(true);
+                expect(ValidationUtils.isValidEmail('invalid-email')).toBe(false);
+                expect(ValidationUtils.isValidEmail('test@')).toBe(false);
+            });
+
+            it('should validate required fields correctly', () => {
+                expect(ValidationUtils.isRequired('test')).toBe(true);
+                expect(ValidationUtils.isRequired('')).toBe(false);
+                expect(ValidationUtils.isRequired(null)).toBe(false);
+                expect(ValidationUtils.isRequired(undefined)).toBe(false);
+            });
+
+            it('should validate ticket data correctly', () => {
+                const validTicket = {
+                    title: 'Test Ticket',
+                    description: 'Test description',
+                    status: 'Open'
+                };
+                
+                const result = ValidationUtils.validateTicket(validTicket);
+                expect(result.isValid).toBe(true);
+                expect(result.errors.length).toBe(0);
+            });
+
+            it('should return errors for invalid ticket data', () => {
+                const invalidTicket = {
+                    title: '',
+                    description: 'A'.repeat(501), // Too long
+                    status: 'Invalid Status'
+                };
+                
+                const result = ValidationUtils.validateTicket(invalidTicket);
+                expect(result.isValid).toBe(false);
+                expect(result.errors.length).toBe(3);
+            });
+        });
+
+        describe('IdUtils - ID Generation', () => {
+            it('should generate unique IDs', () => {
+                const id1 = IdUtils.generateId();
+                const id2 = IdUtils.generateId();
+                
+                expect(id1).toBeTruthy();
+                expect(id2).toBeTruthy();
+                expect(id1).not.toBe(id2);
+            });
+
+            it('should generate IDs with prefix', () => {
+                const id = IdUtils.generateId('ticket');
+                expect(id).toContain('ticket_');
+            });
+
+            it('should generate valid UUIDs', () => {
+                const uuid = IdUtils.generateUUID();
+                const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+                
+                expect(uuid).toMatch(uuidPattern);
+            });
+        });
+
+        // UI functions
+        function runAllTests() {
+            testFramework.runTests();
+        }
+
+        function clearResults() {
+            document.getElementById('testSuites').innerHTML = '';
+            document.getElementById('totalTests').textContent = '0';
+            document.getElementById('passedTests').textContent = '0';
+            document.getElementById('failedTests').textContent = '0';
+            document.getElementById('progressFill').style.width = '0%';
+        }
+
+        function toggleAllSuites() {
+            const testLists = document.querySelectorAll('.test-list');
+            const allExpanded = Array.from(testLists).every(list => list.classList.contains('expanded'));
+            
+            testLists.forEach(list => {
+                if (allExpanded) {
+                    list.classList.remove('expanded');
+                } else {
+                    list.classList.add('expanded');
+                }
+            });
+        }
+
+        // Auto-run tests on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(runAllTests, 500);
+        });
+    </script>
+</body>
+</html>

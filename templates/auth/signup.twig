@@ -1,0 +1,157 @@
+{% extends "base.twig" %}
+
+{% block title %}Sign Up - Ticket Management App{% endblock %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1 class="auth-title">Create Account</h1>
+            <p class="auth-subtitle">Join us to start managing your tickets</p>
+        </div>
+
+        {# Error message display area #}
+        <div id="signup-errors" class="error-container" role="alert" aria-live="polite" style="display: none;">
+            <div class="error-message" id="signup-error-message"></div>
+        </div>
+
+        <form id="signupForm" class="auth-form" novalidate>
+            <div class="form-group">
+                <label for="signup-username" class="form-label">
+                    Username
+                    <span class="required-indicator" aria-label="required">*</span>
+                </label>
+                <input 
+                    type="text" 
+                    id="signup-username" 
+                    name="username" 
+                    class="form-input" 
+                    placeholder="Choose a username"
+                    required 
+                    autocomplete="username"
+                    aria-describedby="signup-username-error"
+                    aria-invalid="false"
+                    minlength="3"
+                    maxlength="20"
+                    pattern="[a-zA-Z0-9_]+"
+                >
+                <div id="signup-username-error" class="field-error" role="alert" aria-live="polite"></div>
+                <div class="field-hint">3-20 characters, letters, numbers, and underscores only</div>
+            </div>
+
+            <div class="form-group">
+                <label for="signup-email" class="form-label">
+                    Email Address
+                    <span class="required-indicator" aria-label="required">*</span>
+                </label>
+                <input 
+                    type="email" 
+                    id="signup-email" 
+                    name="email" 
+                    class="form-input" 
+                    placeholder="Enter your email address"
+                    required 
+                    autocomplete="email"
+                    aria-describedby="signup-email-error"
+                    aria-invalid="false"
+                >
+                <div id="signup-email-error" class="field-error" role="alert" aria-live="polite"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="signup-password" class="form-label">
+                    Password
+                    <span class="required-indicator" aria-label="required">*</span>
+                </label>
+                <input 
+                    type="password" 
+                    id="signup-password" 
+                    name="password" 
+                    class="form-input" 
+                    placeholder="Create a secure password"
+                    required 
+                    autocomplete="new-password"
+                    aria-describedby="signup-password-error password-requirements"
+                    aria-invalid="false"
+                    minlength="6"
+                >
+                <div id="signup-password-error" class="field-error" role="alert" aria-live="polite"></div>
+                <div id="password-requirements" class="field-hint">Minimum 6 characters required</div>
+            </div>
+
+            <div class="form-group">
+                <label for="signup-confirm-password" class="form-label">
+                    Confirm Password
+                    <span class="required-indicator" aria-label="required">*</span>
+                </label>
+                <input 
+                    type="password" 
+                    id="signup-confirm-password" 
+                    name="confirmPassword" 
+                    class="form-input" 
+                    placeholder="Confirm your password"
+                    required 
+                    autocomplete="new-password"
+                    aria-describedby="signup-confirm-password-error"
+                    aria-invalid="false"
+                    minlength="6"
+                >
+                <div id="signup-confirm-password-error" class="field-error" role="alert" aria-live="polite"></div>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input 
+                        type="checkbox" 
+                        id="terms-agreement" 
+                        name="termsAgreement" 
+                        class="form-checkbox" 
+                        required
+                        aria-describedby="terms-error"
+                    >
+                    <label for="terms-agreement" class="checkbox-label">
+                        I agree to the 
+                        <a href="/terms" class="legal-link" target="_blank" rel="noopener noreferrer">Terms of Service</a> 
+                        and 
+                        <a href="/privacy" class="legal-link" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+                        <span class="required-indicator" aria-label="required">*</span>
+                    </label>
+                </div>
+                <div id="terms-error" class="field-error" role="alert" aria-live="polite"></div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-full" id="signup-submit">
+                    <span class="btn-text">Create Account</span>
+                    <span class="btn-loading" style="display: none;">
+                        <span class="loading-spinner"></span>
+                        Creating account...
+                    </span>
+                </button>
+            </div>
+        </form>
+
+        <div class="auth-footer">
+            <p class="auth-link-text">
+                Already have an account? 
+                <a href="/auth/login" class="auth-link">Sign in here</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts_footer %}
+<script src="/assets/js/auth.js"></script>
+<script>
+    // Initialize signup form when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof AuthManager !== 'undefined') {
+            const authManager = new AuthManager();
+            authManager.initializeSignupForm();
+        }
+    });
+</script>
+{% endblock %}
