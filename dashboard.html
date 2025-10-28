@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Ticket Management App</title>
+    <link rel="stylesheet" href="public/assets/css/styles.css">
+    <link rel="stylesheet" href="public/assets/css/dashboard-modern.css">
+    <link rel="stylesheet" href="public/assets/css/dashboard-redesign.css">
+</head>
+<body>
+    <nav class="main-navigation">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="index.html">Ticket Management App</a>
+            </div>
+            <div class="nav-links">
+                <a href="dashboard.html" class="nav-link active">Dashboard</a>
+                <a href="tickets.html" class="nav-link">Tickets</a>
+                <a href="index.html" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>Dashboard</h1>
+            <p>Welcome back! Here's your ticket overview.</p>
+        </header>
+
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📋</div>
+                <div class="stat-content">
+                    <h3>Total Tickets</h3>
+                    <p class="stat-number">48</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🟢</div>
+                <div class="stat-content">
+                    <h3>Open</h3>
+                    <p class="stat-number">12</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🟡</div>
+                <div class="stat-content">
+                    <h3>In Progress</h3>
+                    <p class="stat-number">18</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-content">
+                    <h3>Closed</h3>
+                    <p class="stat-number">18</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="dashboard-actions">
+            <a href="tickets.html" class="btn btn-primary">Create New Ticket</a>
+            <button class="btn btn-secondary">View Reports</button>
+        </section>
+
+        <section class="recent-tickets">
+            <h2>Recent Tickets</h2>
+            <div class="ticket-list">
+                <div class="ticket-item">
+                    <span class="ticket-priority high">High</span>
+                    <h3>Login page not responding</h3>
+                    <p>Status: Open | Created: 2 hours ago</p>
+                </div>
+                <div class="ticket-item">
+                    <span class="ticket-priority medium">Medium</span>
+                    <h3>Update dashboard UI</h3>
+                    <p>Status: In Progress | Created: 5 hours ago</p>
+                </div>
+                <div class="ticket-item">
+                    <span class="ticket-priority low">Low</span>
+                    <h3>Add export feature</h3>
+                    <p>Status: Open | Created: 1 day ago</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
+        .main-navigation { background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 1rem 2rem; }
+        .nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; }
+        .nav-brand a { font-size: 1.25rem; font-weight: bold; color: #3B82F6; text-decoration: none; }
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-link { text-decoration: none; color: #666; font-weight: 500; }
+        .nav-link.active { color: #3B82F6; }
+        .dashboard-container { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; }
+        .dashboard-header { margin-bottom: 2rem; }
+        .dashboard-header h1 { font-size: 2rem; color: #333; margin-bottom: 0.5rem; }
+        .dashboard-header p { color: #666; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: #fff; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 1rem; }
+        .stat-icon { font-size: 2.5rem; }
+        .stat-content h3 { font-size: 0.875rem; color: #666; margin-bottom: 0.5rem; }
+        .stat-number { font-size: 2rem; font-weight: bold; color: #333; }
+        .dashboard-actions { display: flex; gap: 1rem; margin-bottom: 2rem; }
+        .btn { padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; font-size: 1rem; }
+        .btn-primary { background: #3B82F6; color: white; }
+        .btn-secondary { background: #E5E7EB; color: #333; }
+        .recent-tickets { background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .recent-tickets h2 { margin-bottom: 1.5rem; color: #333; }
+        .ticket-list { display: flex; flex-direction: column; gap: 1rem; }
+        .ticket-item { padding: 1rem; border: 1px solid #E5E7EB; border-radius: 8px; }
+        .ticket-priority { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .ticket-priority.high { background: #FEE2E2; color: #991B1B; }
+        .ticket-priority.medium { background: #FEF3C7; color: #92400E; }
+        .ticket-priority.low { background: #D1FAE5; color: #065F46; }
+        .ticket-item h3 { font-size: 1rem; margin-bottom: 0.5rem; color: #333; }
+        .ticket-item p { font-size: 0.875rem; color: #666; }
+    </style>
+</body>
+</html>

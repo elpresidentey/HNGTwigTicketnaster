@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tickets - Ticket Management App</title>
+</head>
+<body>
+    <nav class="main-navigation">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="index.html">Ticket Management App</a>
+            </div>
+            <div class="nav-links">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="tickets.html" class="nav-link active">Tickets</a>
+                <a href="index.html" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="tickets-container">
+        <header class="tickets-header">
+            <h1>All Tickets</h1>
+            <button class="btn btn-primary">+ Create New Ticket</button>
+        </header>
+
+        <div class="filters">
+            <button class="filter-btn active">All (48)</button>
+            <button class="filter-btn">Open (12)</button>
+            <button class="filter-btn">In Progress (18)</button>
+            <button class="filter-btn">Closed (18)</button>
+        </div>
+
+        <div class="tickets-grid">
+            <div class="ticket-card">
+                <div class="ticket-header">
+                    <span class="ticket-id">#1234</span>
+                    <span class="ticket-status open">Open</span>
+                </div>
+                <h3>Login page not responding</h3>
+                <p>Users are unable to access the login page. Getting 500 error.</p>
+                <div class="ticket-meta">
+                    <span class="priority high">🔴 High</span>
+                    <span class="assignee">👤 John Doe</span>
+                    <span class="time">2h ago</span>
+                </div>
+            </div>
+
+            <div class="ticket-card">
+                <div class="ticket-header">
+                    <span class="ticket-id">#1233</span>
+                    <span class="ticket-status progress">In Progress</span>
+                </div>
+                <h3>Update dashboard UI</h3>
+                <p>Redesign the dashboard with modern UI components.</p>
+                <div class="ticket-meta">
+                    <span class="priority medium">🟡 Medium</span>
+                    <span class="assignee">👤 Sarah Smith</span>
+                    <span class="time">5h ago</span>
+                </div>
+            </div>
+
+            <div class="ticket-card">
+                <div class="ticket-header">
+                    <span class="ticket-id">#1232</span>
+                    <span class="ticket-status open">Open</span>
+                </div>
+                <h3>Add export feature</h3>
+                <p>Allow users to export ticket data to CSV format.</p>
+                <div class="ticket-meta">
+                    <span class="priority low">🟢 Low</span>
+                    <span class="assignee">👤 Mike Johnson</span>
+                    <span class="time">1d ago</span>
+                </div>
+            </div>
+
+            <div class="ticket-card">
+                <div class="ticket-header">
+                    <span class="ticket-id">#1231</span>
+                    <span class="ticket-status closed">Closed</span>
+                </div>
+                <h3>Database optimization</h3>
+                <p>Optimize database queries for better performance.</p>
+                <div class="ticket-meta">
+                    <span class="priority high">🔴 High</span>
+                    <span class="assignee">👤 Emily Davis</span>
+                    <span class="time">2d ago</span>
+                </div>
+            </div>
+
+            <div class="ticket-card">
+                <div class="ticket-header">
+                    <span class="ticket-id">#1230</span>
+                    <span class="ticket-status progress">In Progress</span>
+                </div>
+                <h3>Mobile responsive fixes</h3>
+                <p>Fix layout issues on mobile devices.</p>
+                <div class="ticket-meta">
+                    <span class="priority medium">🟡 Medium</span>
+                    <span class="assignee">👤 Alex Brown</span>
+                    <span class="time">3d ago</span>
+                </div>
+            </div>
+
+            <div class="ticket-card">
+                <div class="ticket-header">
+                    <span class="ticket-id">#1229</span>
+                    <span class="ticket-status closed">Closed</span>
+                </div>
+                <h3>Email notifications</h3>
+                <p>Implement email notifications for ticket updates.</p>
+                <div class="ticket-meta">
+                    <span class="priority low">🟢 Low</span>
+                    <span class="assignee">👤 Chris Wilson</span>
+                    <span class="time">4d ago</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
+        .main-navigation { background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 1rem 2rem; }
+        .nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; }
+        .nav-brand a { font-size: 1.25rem; font-weight: bold; color: #3B82F6; text-decoration: none; }
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-link { text-decoration: none; color: #666; font-weight: 500; }
+        .nav-link.active { color: #3B82F6; }
+        .tickets-container { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; }
+        .tickets-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .tickets-header h1 { font-size: 2rem; color: #333; }
+        .btn { padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; font-size: 1rem; }
+        .btn-primary { background: #3B82F6; color: white; }
+        .filters { display: flex; gap: 1rem; margin-bottom: 2rem; }
+        .filter-btn { padding: 0.5rem 1rem; border: 1px solid #E5E7EB; background: white; border-radius: 8px; cursor: pointer; font-weight: 500; color: #666; }
+        .filter-btn.active { background: #3B82F6; color: white; border-color: #3B82F6; }
+        .tickets-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem; }
+        .ticket-card { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .ticket-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .ticket-id { font-weight: 600; color: #666; }
+        .ticket-status { padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+        .ticket-status.open { background: #DBEAFE; color: #1E40AF; }
+        .ticket-status.progress { background: #FEF3C7; color: #92400E; }
+        .ticket-status.closed { background: #E5E7EB; color: #374151; }
+        .ticket-card h3 { font-size: 1.125rem; margin-bottom: 0.5rem; color: #333; }
+        .ticket-card p { font-size: 0.875rem; color: #666; margin-bottom: 1rem; }
+        .ticket-meta { display: flex; gap: 1rem; font-size: 0.875rem; color: #666; flex-wrap: wrap; }
+        .priority { font-weight: 600; }
+    </style>
+</body>
+</html>
