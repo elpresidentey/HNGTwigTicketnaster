@@ -2,6 +2,9 @@
 
 namespace App;
 
+use App\Models\Ticket;
+use App\Models\User;
+
 class Router {
     private $routes = [];
     

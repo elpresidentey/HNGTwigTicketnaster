@@ -3,6 +3,9 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Router.php';
 
 use App\Router;
+use App\Models\Ticket;
+use App\Models\User;
+use App\Database;
 
 // Initialize the router
 $router = new Router();
@@ -21,11 +24,27 @@ $router->get('/auth/signup', function() {
 });
 
 $router->get('/dashboard', function() {
-    return renderTemplate('dashboard.twig');
+    $ticketModel = new Ticket();
+    $stats = $ticketModel->getStats();
+    $recentTickets = array_slice($ticketModel->getAll(), 0, 5);
+    
+    return renderTemplate('dashboard.twig', [
+        'stats' => $stats,
+        'recent_tickets' => $recentTickets
+    ]);
 });
 
 $router->get('/tickets', function() {
-    return renderTemplate('tickets-dashboard.twig');
+    $ticketModel = new Ticket();
+    $userModel = new User();
+    
+    $tickets = $ticketModel->getAll();
+    $users = $userModel->getAll();
+    
+    return renderTemplate('tickets-dashboard.twig', [
+        'tickets' => $tickets,
+        'users' => $users
+    ]);
 });
 
 $router->get('/tickets/list', function() {
@@ -106,6 +125,76 @@ $router->get('/cookies', function() {
 
 $router->get('/security', function() {
     return renderPlaceholder('Security', 'Learn about our security practices and measures.');
+});
+
+// API Routes
+$router->get('/api/tickets', function() {
+    header('Content-Type: application/json');
+    $ticketModel = new Ticket();
+    echo json_encode($ticketModel->getAll());
+});
+
+$router->post('/api/tickets', function() {
+    header('Content-Type: application/json');
+    $data = json_decode(file_get_contents('php://input'), true);
+    
+    $ticketModel = new Ticket();
+    $id = $ticketModel->create($data);
+    
+    echo json_encode(['success' => true, 'id' => $id]);
+});
+
+$router->get('/api/tickets/stats', function() {
+    header('Content-Type: application/json');
+    $ticketModel = new Ticket();
+    echo json_encode($ticketModel->getStats());
+});
+
+// Authentication routes
+$router->post('/auth/login', function() {
+    $email = $_POST['email'] ?? '';
+    $password = $_POST['password'] ?? '';
+    
+    $userModel = new User();
+    $user = $userModel->authenticate($email, $password);
+    
+    if ($user) {
+        session_start();
+        $_SESSION['user'] = $user;
+        header('Location: /dashboard');
+    } else {
+        header('Location: /auth/login?error=1');
+    }
+    exit;
+});
+
+$router->post('/auth/signup', function() {
+    $name = $_POST['name'] ?? '';
+    $email = $_POST['email'] ?? '';
+    $password = $_POST['password'] ?? '';
+    
+    $userModel = new User();
+    
+    // Check if user already exists
+    if ($userModel->getByEmail($email)) {
+        header('Location: /auth/signup?error=exists');
+        exit;
+    }
+    
+    $userId = $userModel->create([
+        'name' => $name,
+        'email' => $email,
+        'password' => $password
+    ]);
+    
+    if ($userId) {
+        session_start();
+        $_SESSION['user'] = $userModel->getById($userId);
+        header('Location: /dashboard');
+    } else {
+        header('Location: /auth/signup?error=1');
+    }
+    exit;
 });
 
 // Newsletter subscription
