@@ -12,12 +12,18 @@ class Database
 
     private function __construct()
     {
-        $dbPath = __DIR__ . '/../database/tickets.db';
-        $dbDir = dirname($dbPath);
+        // Use /tmp for Railway deployment (writable directory)
+        $dbPath = '/tmp/tickets.db';
         
-        // Create database directory if it doesn't exist
-        if (!is_dir($dbDir)) {
-            mkdir($dbDir, 0755, true);
+        // Fallback to local directory for development
+        if (!is_writable('/tmp')) {
+            $dbPath = __DIR__ . '/../database/tickets.db';
+            $dbDir = dirname($dbPath);
+            
+            // Create database directory if it doesn't exist
+            if (!is_dir($dbDir)) {
+                mkdir($dbDir, 0755, true);
+            }
         }
 
         try {

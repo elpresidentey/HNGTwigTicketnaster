@@ -24,27 +24,43 @@ $router->get('/auth/signup', function() {
 });
 
 $router->get('/dashboard', function() {
-    $ticketModel = new Ticket();
-    $stats = $ticketModel->getStats();
-    $recentTickets = array_slice($ticketModel->getAll(), 0, 5);
-    
-    return renderTemplate('dashboard.twig', [
-        'stats' => $stats,
-        'recent_tickets' => $recentTickets
-    ]);
+    try {
+        $ticketModel = new Ticket();
+        $stats = $ticketModel->getStats();
+        $recentTickets = array_slice($ticketModel->getAll(), 0, 5);
+        
+        return renderTemplate('dashboard.twig', [
+            'stats' => $stats,
+            'recent_tickets' => $recentTickets
+        ]);
+    } catch (Exception $e) {
+        // Fallback to static dashboard if database fails
+        return renderTemplate('dashboard.twig', [
+            'stats' => ['total' => 0, 'open' => 0, 'in_progress' => 0, 'closed' => 0],
+            'recent_tickets' => []
+        ]);
+    }
 });
 
 $router->get('/tickets', function() {
-    $ticketModel = new Ticket();
-    $userModel = new User();
-    
-    $tickets = $ticketModel->getAll();
-    $users = $userModel->getAll();
-    
-    return renderTemplate('tickets-dashboard.twig', [
-        'tickets' => $tickets,
-        'users' => $users
-    ]);
+    try {
+        $ticketModel = new Ticket();
+        $userModel = new User();
+        
+        $tickets = $ticketModel->getAll();
+        $users = $userModel->getAll();
+        
+        return renderTemplate('tickets-dashboard.twig', [
+            'tickets' => $tickets,
+            'users' => $users
+        ]);
+    } catch (Exception $e) {
+        // Fallback to static tickets if database fails
+        return renderTemplate('tickets-dashboard.twig', [
+            'tickets' => [],
+            'users' => []
+        ]);
+    }
 });
 
 $router->get('/tickets/list', function() {
