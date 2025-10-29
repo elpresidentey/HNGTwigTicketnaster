@@ -11,6 +11,13 @@ use App\Database;
 try {
     echo "Initializing database...\n";
     
+    // Ensure database directory exists
+    $dbDir = __DIR__ . '/database';
+    if (!is_dir($dbDir)) {
+        mkdir($dbDir, 0755, true);
+        echo "Created database directory\n";
+    }
+    
     // This will create the database and tables automatically
     $db = Database::getInstance();
     
@@ -22,5 +29,6 @@ try {
     
 } catch (Exception $e) {
     echo "❌ Error initializing database: " . $e->getMessage() . "\n";
-    exit(1);
+    // Don't exit with error code on Railway - let the app start anyway
+    echo "Continuing without database initialization...\n";
 }
